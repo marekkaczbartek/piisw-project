@@ -1,8 +1,8 @@
 package org.example.eticket.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.example.eticket.enums.DiscountType;
-import org.example.eticket.enums.TicketType;
+import org.example.eticket.data.enums.DiscountType;
+import org.example.eticket.data.enums.TicketType;
 
 import java.math.BigDecimal;
 

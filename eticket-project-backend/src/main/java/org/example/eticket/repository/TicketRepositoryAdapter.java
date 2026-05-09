@@ -1,6 +1,6 @@
 package org.example.eticket.repository;
 
-import org.example.eticket.entity.Ticket;
+import org.example.eticket.data.entities.Ticket;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;

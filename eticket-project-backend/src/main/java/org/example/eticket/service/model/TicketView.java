@@ -1,7 +1,7 @@
 package org.example.eticket.service.model;
 
-import org.example.eticket.enums.DiscountType;
-import org.example.eticket.enums.TicketType;
+import org.example.eticket.data.enums.DiscountType;
+import org.example.eticket.data.enums.TicketType;
 
 import java.math.BigDecimal;
 

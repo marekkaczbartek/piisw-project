@@ -1,8 +1,8 @@
 package org.example.eticket.service;
 
-import org.example.eticket.entity.Ticket;
-import org.example.eticket.enums.DiscountType;
-import org.example.eticket.enums.TicketType;
+import org.example.eticket.data.entities.Ticket;
+import org.example.eticket.data.enums.DiscountType;
+import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.repository.TicketReadRepository;
 import org.example.eticket.service.model.GetAllTicketsQuery;
 import org.example.eticket.service.model.TicketView;
