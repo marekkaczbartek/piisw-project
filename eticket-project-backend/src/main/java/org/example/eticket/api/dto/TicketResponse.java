@@ -11,7 +11,6 @@ public record TicketResponse(
         TicketType ticketType,
         BigDecimal price,
         DiscountType discountType,
-        Integer durationMinutes
-) {
+        Integer durationMinutes) {
 }
 

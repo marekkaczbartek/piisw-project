@@ -1,4 +1,4 @@
-package org.example.eticket.repository;
+package org.example.eticket.data.repositories;
 
 import org.example.eticket.data.entities.Ticket;
 import org.springframework.data.domain.Page;
@@ -8,11 +8,11 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class TicketRepositoryAdapter implements TicketReadRepository {
+public class TicketQueryRepositoryAdapter implements TicketQueryRepository {
 
     private final TicketJpaRepository ticketJpaRepository;
 
-    public TicketRepositoryAdapter(TicketJpaRepository ticketJpaRepository) {
+    public TicketQueryRepositoryAdapter(TicketJpaRepository ticketJpaRepository) {
         this.ticketJpaRepository = ticketJpaRepository;
     }
 

@@ -6,13 +6,14 @@ import org.example.eticket.service.TicketService;
 import org.example.eticket.service.model.GetAllTicketsQuery;
 import org.example.eticket.service.model.TicketView;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,10 +27,9 @@ public class TicketController {
 
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<TicketResponse>>> getAllTickets(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size
+            @PageableDefault(size = 5) Pageable pageable
     ) {
-        Page<TicketView> ticketPage = ticketService.getAllTickets(new GetAllTicketsQuery(page, size));
+        Page<TicketView> ticketPage = ticketService.getAllTickets(new GetAllTicketsQuery(pageable));
         PagedModel<EntityModel<TicketResponse>> model = pagedResourceAssembler.toModel(
                 ticketPage,
                 ticketView -> ticketModelAssembler.toModel(toResponse(ticketView))

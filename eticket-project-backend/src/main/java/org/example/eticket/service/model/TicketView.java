@@ -9,7 +9,6 @@ public record TicketView(
         TicketType ticketType,
         DiscountType discountType,
         BigDecimal price,
-        Integer durationMinutes
-) {
+        Integer durationMinutes) {
 }
 

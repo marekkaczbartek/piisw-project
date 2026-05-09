@@ -1,4 +1,6 @@
 package org.example.eticket.service.model;
 
-public record GetAllTicketsQuery(int page, int size) {
+import org.springframework.data.domain.Pageable;
+
+public record GetAllTicketsQuery(Pageable pageable) {
 }

@@ -3,12 +3,13 @@ package org.example.eticket.service;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
-import org.example.eticket.repository.TicketReadRepository;
+import org.example.eticket.data.repositories.TicketQueryRepository;
 import org.example.eticket.service.model.GetAllTicketsQuery;
 import org.example.eticket.service.model.TicketView;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -22,11 +23,11 @@ class TicketServiceTest {
     @Test
     void returnsEmptyListWhenNoTicketsExist() {
         // given
-        TicketReadRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of());
+        TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of());
         TicketService ticketService = new TicketService(ticketReadRepository);
 
         // when
-        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(0, 20)).getContent();
+        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(PageRequest.of(0, 20))).getContent();
 
         // then
         assertEquals(List.of(), result);
@@ -47,11 +48,11 @@ class TicketServiceTest {
                 .price(new BigDecimal("2.00"))
                 .durationMinutes(30)
                 .build();
-        TicketReadRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(singleUse, timeBased));
+        TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(singleUse, timeBased));
         TicketService ticketService = new TicketService(ticketReadRepository);
 
         // when
-        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(0, 20)).getContent();
+        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(PageRequest.of(0, 20))).getContent();
 
         // then
         List<TicketView> expected = List.of(
@@ -75,11 +76,11 @@ class TicketServiceTest {
                 .price(new BigDecimal("2.00"))
                 .durationMinutes(30)
                 .build();
-        TicketReadRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(first, second));
+        TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(first, second));
         TicketService ticketService = new TicketService(ticketReadRepository);
 
         // when
-        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(1, 1)).getContent();
+        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(PageRequest.of(1, 1))).getContent();
 
         // then
         List<TicketView> expected = List.of(
@@ -88,9 +89,7 @@ class TicketServiceTest {
         assertEquals(expected, result);
     }
 
-    private static class InMemoryTicketReadRepository implements TicketReadRepository {
-
-        private final List<Ticket> tickets;
+    private record InMemoryTicketReadRepository(List<Ticket> tickets) implements TicketQueryRepository {
 
         private InMemoryTicketReadRepository(List<Ticket> tickets) {
             this.tickets = new ArrayList<>(tickets);

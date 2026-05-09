@@ -1,27 +1,18 @@
 package org.example.eticket.service;
 
+import lombok.RequiredArgsConstructor;
 import org.example.eticket.data.entities.Ticket;
-import org.example.eticket.repository.TicketReadRepository;
+import org.example.eticket.data.repositories.TicketQueryRepository;
 import org.example.eticket.service.model.GetAllTicketsQuery;
 import org.example.eticket.service.model.TicketView;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class TicketService {
 
-    private final TicketReadRepository ticketReadRepository;
-
-    public TicketService(TicketReadRepository ticketReadRepository) {
-        this.ticketReadRepository = ticketReadRepository;
-    }
-
-    public Page<TicketView> getAllTickets(GetAllTicketsQuery query) {
-        PageRequest pageRequest = PageRequest.of(query.page(), query.size());
-        return ticketReadRepository.findAll(pageRequest)
-                .map(TicketService::toView);
-    }
+    private final TicketQueryRepository ticketReadRepository;
 
     private static TicketView toView(Ticket ticket) {
         return new TicketView(
@@ -30,5 +21,10 @@ public class TicketService {
                 ticket.getPrice(),
                 ticket.getDurationMinutes()
         );
+    }
+
+    public Page<TicketView> getAllTickets(GetAllTicketsQuery query) {
+        return ticketReadRepository.findAll(query.pageable())
+                .map(TicketService::toView);
     }
 }
