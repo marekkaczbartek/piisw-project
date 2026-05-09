@@ -26,3 +26,50 @@ Funkcja wymaga zalogowania się do systemu. Bileter może sprawdzać ważność 
 
 # technology
 Java + Angular
+
+## ER Diagram
+
+```mermaid
+erDiagram
+    users {
+        UUID        id              PK
+        VARCHAR     email           "UNIQUE NOT NULL"
+        VARCHAR     password_hash   "NOT NULL"
+        VARCHAR     first_name      "NOT NULL"
+        VARCHAR     last_name       "NOT NULL"
+        VARCHAR     role            "NOT NULL — PASSENGER | INSPECTOR"
+    }
+
+    tickets {
+        UUID        id              PK
+        VARCHAR     ticket_type     "NOT NULL — SINGLE_USE | TIME_BASED | PERIOD"
+        VARCHAR     discount_type   "NOT NULL — NORMAL | REDUCED"
+        DECIMAL     price           "NOT NULL"
+        INT         duration_minutes "NULL — only TIME_BASED / PERIOD"
+    }
+
+    purchases {
+        UUID        id              PK
+        TIMESTAMP   bought_at       "NOT NULL"
+        TIMESTAMP   punched_at      "NULL — set on punching"
+        VARCHAR     uuid            "UNIQUE NOT NULL"
+        UUID        passenger_id    FK
+        UUID        ticket_id       FK
+        VARCHAR     punched_in      "NULL — only when ticket_type = SINGLE_USE"
+        TIMESTAMP   expires_at      "NULL — only when ticket_type = TIME_BASED / PERIOD"
+    }
+
+    validations {
+        UUID        id              PK
+        TIMESTAMP   checked_at      "NOT NULL"
+        VARCHAR     checked_in      "NOT NULL — vehicle ID"
+        BOOLEAN     result          "NOT NULL"
+        UUID        inspector_id    FK
+        UUID        purchase_id     FK
+    }
+
+    users         ||--o{ purchases   : "passenger places"
+    tickets       ||--o{ purchases   : "offer for"
+    users         ||--o{ validations : "inspector records"
+    purchases     ||--o{ validations : "checked in"
+```
