@@ -1,4 +1,4 @@
-package org.example.eticket.entity;
+package org.example.eticket.data.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

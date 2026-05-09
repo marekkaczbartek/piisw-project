@@ -1,4 +1,4 @@
-package org.example.eticket.entity;
+package org.example.eticket.data.entities;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.eticket.enums.UserRole;
+import org.example.eticket.data.enums.UserRole;
 
 import java.util.UUID;
 
