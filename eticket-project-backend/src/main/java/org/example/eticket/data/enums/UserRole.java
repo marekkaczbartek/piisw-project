@@ -1,4 +1,4 @@
-package org.example.eticket.enums;
+package org.example.eticket.data.enums;
 
 public enum UserRole {
     PASSENGER,
