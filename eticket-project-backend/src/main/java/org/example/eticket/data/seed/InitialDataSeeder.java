@@ -82,34 +82,11 @@ public class InitialDataSeeder implements ApplicationRunner {
         }
     }
 
-    private static class UserSeed {
-        private final UserRole role;
-        private final String email;
-        private final String passwordHash;
-        private final String firstName;
-        private final String lastName;
-
-        private UserSeed(UserRole role, String email, String passwordHash, String firstName, String lastName) {
-            this.role = role;
-            this.email = email;
-            this.passwordHash = passwordHash;
-            this.firstName = firstName;
-            this.lastName = lastName;
-        }
+    private record UserSeed(UserRole role, String email, String passwordHash, String firstName, String lastName) {
     }
 
-    private static class TicketSeed {
-        private final TicketType ticketType;
-        private final DiscountType discountType;
-        private final BigDecimal price;
-        private final Integer durationMinutes;
-
-        private TicketSeed(TicketType ticketType, DiscountType discountType, BigDecimal price, Integer durationMinutes) {
-            this.ticketType = ticketType;
-            this.discountType = discountType;
-            this.price = price;
-            this.durationMinutes = durationMinutes;
-        }
+    private record TicketSeed(TicketType ticketType, DiscountType discountType, BigDecimal price,
+                              Integer durationMinutes) {
     }
 }
 
