@@ -1,0 +1,16 @@
+package org.example.eticket.api.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import org.example.eticket.data.enums.DiscountType;
+import org.example.eticket.data.enums.TicketType;
+
+import java.math.BigDecimal;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record TicketResponse(
+        TicketType ticketType,
+        BigDecimal price,
+        DiscountType discountType,
+        Integer durationMinutes) {
+}
+
