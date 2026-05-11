@@ -43,7 +43,9 @@ public class JwtService {
 
     public boolean isTokenValid(String token, String expectedEmail) {
         Claims claims = parseClaims(token);
-        return expectedEmail.equals(claims.getSubject()) && claims.getExpiration().after(new Date());
+        return expectedEmail.equals(claims.getSubject())
+                && properties.issuer().equals(claims.getIssuer())
+                && claims.getExpiration().after(new Date());
     }
 
     private Claims parseClaims(String token) {
@@ -54,4 +56,3 @@ public class JwtService {
                 .getPayload();
     }
 }
-
