@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Component
-@ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(prefix = "app.seed", name = "enabled", havingValue = "true")
 public class InitialDataSeeder implements ApplicationRunner {
 
     private final UserJpaRepository userRepository;

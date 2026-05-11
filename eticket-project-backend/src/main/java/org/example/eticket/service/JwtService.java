@@ -20,16 +20,16 @@ public class JwtService {
 
     public JwtService(JwtProperties properties) {
         this.properties = properties;
-        this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(properties.getSecret()));
+        this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(properties.secret()));
     }
 
     public String generateToken(User user) {
         Instant now = Instant.now();
-        Instant expiresAt = now.plusSeconds(properties.getExpirationMinutes() * 60);
+        Instant expiresAt = now.plusSeconds(properties.expirationMinutes() * 60);
 
         return Jwts.builder()
                 .subject(user.getEmail())
-                .issuer(properties.getIssuer())
+                .issuer(properties.issuer())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiresAt))
                 .claim("role", user.getRole().name())
