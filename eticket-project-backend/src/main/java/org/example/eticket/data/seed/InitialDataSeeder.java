@@ -10,6 +10,7 @@ import org.example.eticket.data.repositories.UserJpaRepository;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,10 +23,14 @@ public class InitialDataSeeder implements ApplicationRunner {
 
     private final UserJpaRepository userRepository;
     private final TicketJpaRepository ticketRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public InitialDataSeeder(UserJpaRepository userRepository, TicketJpaRepository ticketRepository) {
+    public InitialDataSeeder(UserJpaRepository userRepository,
+                             TicketJpaRepository ticketRepository,
+                             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -46,7 +51,7 @@ public class InitialDataSeeder implements ApplicationRunner {
                 userRepository.save(User.builder()
                         .role(seed.role)
                         .email(seed.email)
-                        .passwordHash(seed.passwordHash)
+                        .passwordHash(passwordEncoder.encode(seed.password))
                         .firstName(seed.firstName)
                         .lastName(seed.lastName)
                         .build());
@@ -82,12 +87,10 @@ public class InitialDataSeeder implements ApplicationRunner {
         }
     }
 
-    private record UserSeed(UserRole role, String email, String passwordHash, String firstName, String lastName) {
+    private record UserSeed(UserRole role, String email, String password, String firstName, String lastName) {
     }
 
     private record TicketSeed(TicketType ticketType, DiscountType discountType, BigDecimal price,
                               Integer durationMinutes) {
     }
 }
-
-
