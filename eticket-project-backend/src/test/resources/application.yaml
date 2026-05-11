@@ -11,3 +11,8 @@ spring:
     init:
       mode: never
 
+app:
+  jwt:
+    secret: wNn9n1wH2lQXHmpd2nq5W6JdVwT1r5xF3hP2a1p9nQw=
+    issuer: eticket-test
+    expiration-minutes: 60
