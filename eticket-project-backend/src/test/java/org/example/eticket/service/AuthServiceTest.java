@@ -1,10 +1,10 @@
 package org.example.eticket.service;
 
-import org.example.eticket.api.dto.LoginRequest;
-import org.example.eticket.api.dto.RegisterRequest;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.enums.UserRole;
 import org.example.eticket.data.repositories.UserJpaRepository;
+import org.example.eticket.service.model.LoginCommand;
+import org.example.eticket.service.model.RegisterCommand;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,9 +31,9 @@ class AuthServiceTest {
         JwtService jwtService = mock(JwtService.class);
         AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService);
 
-        RegisterRequest request = new RegisterRequest("new@example.com", "secret", "New", "User");
+        RegisterCommand command = new RegisterCommand("new@example.com", "secret", "New", "User");
 
-        when(userRepository.existsByEmail(request.email())).thenReturn(false);
+        when(userRepository.existsByEmail(command.email())).thenReturn(false);
         when(jwtService.generateToken(any(User.class))).thenReturn("token");
 
         ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
@@ -43,12 +43,12 @@ class AuthServiceTest {
             return saved;
         });
 
-        authService.register(request);
+        authService.register(command);
 
         User captured = captor.getValue();
-        assertEquals(request.email(), captured.getEmail());
+        assertEquals(command.email(), captured.getEmail());
         assertEquals(UserRole.PASSENGER, captured.getRole());
-        assertTrue(passwordEncoder.matches(request.password(), captured.getPasswordHash()));
+        assertTrue(passwordEncoder.matches(command.password(), captured.getPasswordHash()));
     }
 
     @Test
@@ -59,21 +59,21 @@ class AuthServiceTest {
         JwtService jwtService = mock(JwtService.class);
         AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService);
 
-        LoginRequest request = new LoginRequest("user@example.com", "secret");
+        LoginCommand command = new LoginCommand("user@example.com", "secret");
         User user = User.builder()
                 .id(UUID.randomUUID())
-                .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password()))
+                .email(command.email())
+                .passwordHash(passwordEncoder.encode(command.password()))
                 .firstName("Ula")
                 .lastName("User")
                 .role(UserRole.PASSENGER)
                 .build();
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenReturn(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
+                .thenReturn(new UsernamePasswordAuthenticationToken(command.email(), command.password()));
+        when(userRepository.findByEmail(command.email())).thenReturn(Optional.of(user));
         when(jwtService.generateToken(user)).thenReturn("token");
 
-        assertEquals(request.email(), authService.login(request).email());
+        assertEquals(command.email(), authService.login(command).email());
     }
 }
