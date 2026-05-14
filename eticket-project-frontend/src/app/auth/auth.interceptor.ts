@@ -17,7 +17,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authed).pipe(
     catchError((err: HttpErrorResponse) => {
-      if (err.status === 401 && store.isLoggedIn()) {
+      if ((err.status === 401 || err.status === 403) && store.isLoggedIn()) {
         store.clear();
         router.navigateByUrl('/login');
       }

@@ -24,12 +24,12 @@ export function groupTickets(tickets: readonly TicketResponse[]): Column[] {
   const byType = new Map<TicketType, Map<number | null, Variant>>();
   for (const type of TYPE_ORDER) byType.set(type, new Map());
 
-  for (const t of tickets) {
-    const bucket = byType.get(t.ticketType);
+  for (const ticket of tickets) {
+    const bucket = byType.get(ticket.ticketType);
     if (!bucket) continue;
-    const key = t.durationMinutes;
+    const key = ticket.durationMinutes;
     const existing = bucket.get(key) ?? { durationMinutes: key, prices: {} };
-    existing.prices[t.discountType] = t.price;
+    existing.prices[ticket.discountType] = ticket.price;
     bucket.set(key, existing);
   }
 
@@ -46,11 +46,8 @@ export function groupTickets(tickets: readonly TicketResponse[]): Column[] {
 export function variantLabel(type: TicketType, v: Variant): string {
   if (type === 'SINGLE_USE') return 'Przejazd';
   if (v.durationMinutes == null) return '—';
-  if (type === 'TIME_BASED') {
-    return v.durationMinutes >= 60
-      ? `${v.durationMinutes / 60} godz.`
-      : `${v.durationMinutes} min`;
-  }
+  if (type === 'TIME_BASED') return `${v.durationMinutes} min`;
+
   const days = Math.round(v.durationMinutes / (60 * 24));
   return days === 1 ? '1 dzień' : `${days} dni`;
 }

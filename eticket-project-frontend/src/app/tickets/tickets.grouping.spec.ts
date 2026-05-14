@@ -56,11 +56,6 @@ describe('variantLabel', () => {
     expect(variantLabel('TIME_BASED', { durationMinutes: 20, prices: {} })).toBe('20 min');
   });
 
-  it('formats TIME_BASED >= 60 min in hours', () => {
-    expect(variantLabel('TIME_BASED', { durationMinutes: 60, prices: {} })).toBe('1 godz.');
-    expect(variantLabel('TIME_BASED', { durationMinutes: 120, prices: {} })).toBe('2 godz.');
-  });
-
   it('formats PERIOD as 1 dzień / N dni', () => {
     expect(variantLabel('PERIOD', { durationMinutes: 60 * 24, prices: {} })).toBe('1 dzień');
     expect(variantLabel('PERIOD', { durationMinutes: 60 * 24 * 30, prices: {} })).toBe('30 dni');
