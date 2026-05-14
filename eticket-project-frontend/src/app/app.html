@@ -1,12 +1,12 @@
 <nav class="navbar navbar-expand bg-dark border-bottom border-secondary px-3" data-bs-theme="dark">
-  <a class="navbar-brand" routerLink="/">eTicket</a>
+  <a class="navbar-brand" routerLink="/">eBilet</a>
   <div class="ms-auto">
     @if (store.isLoggedIn()) {
       <span class="text-light me-3">{{ store.user()?.email }}</span>
-      <button type="button" class="btn btn-outline-light btn-sm" (click)="logout()">Logout</button>
+      <button type="button" class="btn btn-outline-light btn-sm" (click)="logout()">Wyloguj</button>
     } @else {
-      <a class="btn btn-outline-light btn-sm me-2" routerLink="/login">Login</a>
-      <a class="btn btn-light btn-sm" routerLink="/register">Register</a>
+      <a class="btn btn-outline-light btn-sm me-2" routerLink="/login">Zaloguj</a>
+      <a class="btn btn-light btn-sm" routerLink="/register">Zarejestruj się</a>
     }
   </div>
 </nav>

@@ -1,1 +1,13 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+  min-height: 100%;
+}
+
+body {
+  background: #f7f8fb;
+  color: #1f2937;
+}
+
+.navbar-brand {
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}

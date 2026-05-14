@@ -36,8 +36,8 @@ export class LoginComponent {
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
         this.error.set(err.status === 401 || err.status === 403
-          ? 'Invalid email or password.'
-          : 'Login failed. Please try again.');
+          ? 'Nieprawidłowy adres e-mail lub hasło.'
+          : 'Logowanie nie powiodło się. Spróbuj ponownie.');
       },
     });
   }
