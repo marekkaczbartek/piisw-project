@@ -1,11 +1,12 @@
-package org.example.eticket.service;
+package org.example.eticket.application;
 
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.repositories.TicketQueryRepository;
-import org.example.eticket.service.model.GetAllTicketsQuery;
-import org.example.eticket.service.model.TicketView;
+import org.example.eticket.application.model.ticket.GetAllTicketsQuery;
+import org.example.eticket.application.model.ticket.TicketView;
+import org.example.eticket.application.service.TicketService;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;

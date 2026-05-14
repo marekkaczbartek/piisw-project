@@ -1,4 +1,4 @@
-package org.example.eticket.service;
+package org.example.eticket.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.eticket.data.entities.User;

@@ -1,10 +1,10 @@
-package org.example.eticket.service;
+package org.example.eticket.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.repositories.TicketQueryRepository;
-import org.example.eticket.service.model.GetAllTicketsQuery;
-import org.example.eticket.service.model.TicketView;
+import org.example.eticket.application.model.ticket.GetAllTicketsQuery;
+import org.example.eticket.application.model.ticket.TicketView;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 

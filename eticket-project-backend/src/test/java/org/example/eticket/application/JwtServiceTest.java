@@ -1,8 +1,9 @@
-package org.example.eticket.service;
+package org.example.eticket.application;
 
 import org.example.eticket.config.JwtProperties;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.enums.UserRole;
+import org.example.eticket.application.service.JwtService;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;

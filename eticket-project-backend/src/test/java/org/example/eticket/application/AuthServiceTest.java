@@ -1,10 +1,12 @@
-package org.example.eticket.service;
+package org.example.eticket.application;
 
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.enums.UserRole;
 import org.example.eticket.data.repositories.UserJpaRepository;
-import org.example.eticket.service.model.LoginCommand;
-import org.example.eticket.service.model.RegisterCommand;
+import org.example.eticket.application.model.auth.LoginCommand;
+import org.example.eticket.application.model.auth.RegisterCommand;
+import org.example.eticket.application.service.AuthService;
+import org.example.eticket.application.service.JwtService;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.security.authentication.AuthenticationManager;

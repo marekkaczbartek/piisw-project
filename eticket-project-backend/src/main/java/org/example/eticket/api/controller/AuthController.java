@@ -1,13 +1,13 @@
-package org.example.eticket.api;
+package org.example.eticket.api.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.eticket.api.dto.AuthResponse;
-import org.example.eticket.api.dto.LoginRequest;
-import org.example.eticket.api.dto.RegisterRequest;
-import org.example.eticket.service.AuthService;
-import org.example.eticket.service.model.AuthView;
-import org.example.eticket.service.model.LoginCommand;
-import org.example.eticket.service.model.RegisterCommand;
+import org.example.eticket.api.dto.auth.AuthResponse;
+import org.example.eticket.api.dto.auth.LoginRequest;
+import org.example.eticket.api.dto.auth.RegisterRequest;
+import org.example.eticket.application.service.AuthService;
+import org.example.eticket.application.model.auth.AuthView;
+import org.example.eticket.application.model.auth.LoginCommand;
+import org.example.eticket.application.model.auth.RegisterCommand;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    private static AuthResponse toResponse(AuthView view) {
+        return new AuthResponse(
+                view.token(),
+                view.id(),
+                view.email(),
+                view.role(),
+                view.firstName(),
+                view.lastName()
+        );
+    }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
@@ -36,16 +47,5 @@ public class AuthController {
         ));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(toResponse(view));
-    }
-
-    private static AuthResponse toResponse(AuthView view) {
-        return new AuthResponse(
-                view.token(),
-                view.id(),
-                view.email(),
-                view.role(),
-                view.firstName(),
-                view.lastName()
-        );
     }
 }

@@ -1,10 +1,11 @@
-package org.example.eticket.api;
+package org.example.eticket.api.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.eticket.api.dto.TicketResponse;
-import org.example.eticket.service.TicketService;
-import org.example.eticket.service.model.GetAllTicketsQuery;
-import org.example.eticket.service.model.TicketView;
+import org.example.eticket.api.dto.ticket.TicketResponse;
+import org.example.eticket.api.pagination.TicketModelAssembler;
+import org.example.eticket.application.model.ticket.GetAllTicketsQuery;
+import org.example.eticket.application.model.ticket.TicketView;
+import org.example.eticket.application.service.TicketService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -25,6 +26,15 @@ public class TicketController {
     private final TicketModelAssembler ticketModelAssembler;
     private final PagedResourcesAssembler<TicketView> pagedResourceAssembler;
 
+    private static TicketResponse toResponse(TicketView ticketView) {
+        return new TicketResponse(
+                ticketView.ticketType(),
+                ticketView.price(),
+                ticketView.discountType(),
+                ticketView.durationMinutes()
+        );
+    }
+
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<TicketResponse>>> getAllTickets(
             @PageableDefault(size = 5) Pageable pageable
@@ -35,14 +45,5 @@ public class TicketController {
                 ticketView -> ticketModelAssembler.toModel(toResponse(ticketView))
         );
         return ResponseEntity.ok(model);
-    }
-
-    private static TicketResponse toResponse(TicketView ticketView) {
-        return new TicketResponse(
-                ticketView.ticketType(),
-                ticketView.price(),
-                ticketView.discountType(),
-                ticketView.durationMinutes()
-        );
     }
 }

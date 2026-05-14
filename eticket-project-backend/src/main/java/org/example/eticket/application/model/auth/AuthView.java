@@ -1,4 +1,4 @@
-package org.example.eticket.service.model;
+package org.example.eticket.application.model.auth;
 
 import org.example.eticket.data.enums.UserRole;
 

@@ -1,4 +1,4 @@
-package org.example.eticket.service;
+package org.example.eticket.application.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.eticket.data.entities.User;
@@ -12,9 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import org.example.eticket.service.model.AuthView;
-import org.example.eticket.service.model.LoginCommand;
-import org.example.eticket.service.model.RegisterCommand;
+import org.example.eticket.application.model.auth.AuthView;
+import org.example.eticket.application.model.auth.LoginCommand;
+import org.example.eticket.application.model.auth.RegisterCommand;
 
 @Service
 @RequiredArgsConstructor

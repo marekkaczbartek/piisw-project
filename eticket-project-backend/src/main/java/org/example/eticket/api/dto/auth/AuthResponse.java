@@ -1,4 +1,4 @@
-package org.example.eticket.api.dto;
+package org.example.eticket.api.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.example.eticket.data.enums.UserRole;
