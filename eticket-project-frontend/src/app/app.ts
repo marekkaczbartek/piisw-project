@@ -1,12 +1,19 @@
-import { Component, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { AuthStore } from './auth/auth.store';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, RouterLink],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
-  protected readonly title = signal('eticket-project-frontend');
+  protected readonly store = inject(AuthStore);
+  private readonly router = inject(Router);
+
+  logout(): void {
+    this.store.clear();
+    this.router.navigateByUrl('/login');
+  }
 }
