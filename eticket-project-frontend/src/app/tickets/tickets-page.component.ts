@@ -27,7 +27,7 @@ export class TicketsPageComponent {
   }
 
   protected buy(type: TicketType, variant: Variant, discount: DiscountType): void {
-    // TODO: podłączyć zakup, gdy backend będzie gotowy.
+    // TODO
     console.log('buy', { type, durationMinutes: variant.durationMinutes, discount, price: variant.prices[discount] });
   }
 
