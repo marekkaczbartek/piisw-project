@@ -34,8 +34,8 @@ export class RegisterComponent {
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
         this.error.set(err.status === 409
-          ? 'An account with this email already exists.'
-          : 'Registration failed. Please try again.');
+          ? 'Konto z tym adresem e-mail już istnieje.'
+          : 'Rejestracja nie powiodła się. Spróbuj ponownie.');
       },
     });
   }

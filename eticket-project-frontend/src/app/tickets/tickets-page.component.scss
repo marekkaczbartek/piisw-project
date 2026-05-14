@@ -1,0 +1,108 @@
+$price-col: 5.5rem;
+$row-gap: 0.6rem;
+$row-padding-x: 0.85rem;
+
+.ticket-column {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1rem;
+  padding: 1.5rem 1.25rem 1.25rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  &__head {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  &__icon {
+    font-size: 2rem;
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+
+  &__title {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0;
+    color: #1f2937;
+  }
+
+  &__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+.ticket-row {
+  display: grid;
+  grid-template-columns: 1fr $price-col $price-col;
+  align-items: center;
+  gap: $row-gap;
+  padding: 0.55rem $row-padding-x;
+
+  &--legend {
+    padding-top: 0;
+    padding-bottom: 0.4rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+  }
+}
+
+.ticket-variant {
+  border-radius: 0.6rem;
+  background: #f5f7fb;
+
+  &__label {
+    font-weight: 500;
+    color: #1f2937;
+  }
+
+  &__price {
+    appearance: none;
+    border: none;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.4rem 0;
+    width: 100%;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+    transition: transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+      filter: brightness(1.05);
+    }
+
+    &:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    &--normal {
+      background: #0d6efd;
+    }
+
+    &--reduced {
+      background: #d97706;
+    }
+
+    &--empty {
+      background: transparent;
+      color: #cbd5e1;
+      box-shadow: none;
+      cursor: default;
+      font-weight: 400;
+      padding: 0.4rem 0;
+    }
+  }
+}

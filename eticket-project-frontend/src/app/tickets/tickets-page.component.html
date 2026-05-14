@@ -1,0 +1,67 @@
+<header class="mb-4">
+  <h1 class="h3 mb-0">Oferta biletów</h1>
+</header>
+
+@if (ticketsRes.isLoading()) {
+  <div class="d-flex align-items-center text-muted small mb-3">
+    <span class="spinner-border spinner-border-sm me-2" role="status"></span>
+    Ładowanie…
+  </div>
+}
+
+@if (ticketsRes.error()) {
+  <div class="alert alert-danger">Nie udało się załadować biletów. Spróbuj ponownie.</div>
+}
+
+<div class="row g-3">
+  @for (col of columns(); track trackByColumn($index, col)) {
+    <div class="col-12 col-md-4">
+      <section class="ticket-column h-100 d-flex flex-column">
+        <header class="ticket-column__head">
+          <div class="ticket-column__icon">{{ col.icon }}</div>
+          <h2 class="ticket-column__title">{{ col.title }}</h2>
+        </header>
+
+        <div class="ticket-row ticket-row--legend">
+          <span>Okres</span>
+          <span class="text-center">Ulgowy</span>
+          <span class="text-center">Normalny</span>
+        </div>
+
+        <ul class="ticket-column__list flex-grow-1">
+          @for (v of col.variants; track trackByVariant($index, v)) {
+            <li class="ticket-row ticket-variant">
+              <div class="ticket-variant__label">{{ variantLabel(col.type, v) }}</div>
+
+              @if (v.prices['REDUCED']; as price) {
+                <button
+                  type="button"
+                  class="ticket-variant__price ticket-variant__price--reduced"
+                  (click)="buy(col.type, v, 'REDUCED')"
+                >
+                  {{ price | currency:'PLN':'symbol':'1.2-2' }}
+                </button>
+              } @else {
+                <span class="ticket-variant__price ticket-variant__price--empty">—</span>
+              }
+
+              @if (v.prices['NORMAL']; as price) {
+                <button
+                  type="button"
+                  class="ticket-variant__price ticket-variant__price--normal"
+                  (click)="buy(col.type, v, 'NORMAL')"
+                >
+                  {{ price | currency:'PLN':'symbol':'1.2-2' }}
+                </button>
+              } @else {
+                <span class="ticket-variant__price ticket-variant__price--empty">—</span>
+              }
+            </li>
+          } @empty {
+            <li class="text-muted small text-center py-3">Brak ofert.</li>
+          }
+        </ul>
+      </section>
+    </div>
+  }
+</div>

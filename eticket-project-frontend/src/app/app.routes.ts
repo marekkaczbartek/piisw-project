@@ -15,7 +15,7 @@ export const routes: Routes = [
     path: 'tickets',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./auth/tickets-placeholder.component').then((m) => m.TicketsPlaceholderComponent),
+      import('./tickets/tickets-page.component').then((m) => m.TicketsPageComponent),
   },
   { path: '**', redirectTo: 'tickets' },
 ];
