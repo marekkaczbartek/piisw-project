@@ -24,5 +24,8 @@ app:
     secret: wNn9n1wH2lQXHmpd2nq5W6JdVwT1r5xF3hP2a1p9nQw=
     issuer: eticket
     expiration-minutes: 60
+  cors:
+    allowed-origins:
+      - http://localhost:4200
   seed:
     enabled: true
