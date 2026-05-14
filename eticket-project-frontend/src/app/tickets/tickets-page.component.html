@@ -14,7 +14,7 @@
 }
 
 <div class="row g-3">
-  @for (col of columns(); track trackByColumn($index, col)) {
+  @for (col of columns(); track col.type) {
     <div class="col-12 col-md-4">
       <section class="ticket-column h-100 d-flex flex-column">
         <header class="ticket-column__head">
@@ -29,7 +29,7 @@
         </div>
 
         <ul class="ticket-column__list flex-grow-1">
-          @for (v of col.variants; track trackByVariant($index, v)) {
+          @for (v of col.variants; track v.durationMinutes) {
             <li class="ticket-row ticket-variant">
               <div class="ticket-variant__label">{{ variantLabel(col.type, v) }}</div>
 

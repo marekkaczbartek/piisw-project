@@ -30,12 +30,4 @@ export class TicketsPageComponent {
     // TODO
     console.log('buy', { type, durationMinutes: variant.durationMinutes, discount, price: variant.prices[discount] });
   }
-
-  protected trackByVariant(_: number, v: Variant): string {
-    return String(v.durationMinutes);
-  }
-
-  protected trackByColumn(_: number, c: Column): TicketType {
-    return c.type;
-  }
 }

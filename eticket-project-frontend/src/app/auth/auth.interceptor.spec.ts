@@ -85,4 +85,22 @@ describe('authInterceptor', () => {
     expect(store.isLoggedIn()).toBeFalse();
     expect(navSpy).toHaveBeenCalledWith('/login');
   });
+
+  it('clears the session and redirects to /login on 403', () => {
+    store.setSession(SAMPLE_USER);
+    const navSpy = spyOn(router, 'navigateByUrl');
+
+    http.get(`${environment.apiUrl}/tickets`).subscribe({
+      next: () => fail('should have errored'),
+      error: () => {},
+    });
+
+    httpMock.expectOne(`${environment.apiUrl}/tickets`).flush(
+      { message: 'forbidden' },
+      { status: 403, statusText: 'Forbidden' },
+    );
+
+    expect(store.isLoggedIn()).toBeFalse();
+    expect(navSpy).toHaveBeenCalledWith('/login');
+  });
 });
