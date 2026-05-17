@@ -14,23 +14,14 @@ import org.example.eticket.data.repositories.ValidationCommandRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TicketValidationServiceTest {
 
@@ -40,7 +31,7 @@ class TicketValidationServiceTest {
     }
 
     @Test
-    void periodTicketIsValidWhenCheckedWithinValidity() {
+    void periodTicketIsTicketValidWhenCheckedWithinValidity() {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime expiresAt = boughtAt.plusDays(1);
@@ -64,7 +55,7 @@ class TicketValidationServiceTest {
                 "BUS-10"
         );
 
-        assertTrue(service.isValid(command).valid());
+        assertTrue(service.isTicketValid(command).valid());
         Validation saved = validationRepository.singleSaved();
         assertNotNull(saved);
         assertEquals(inspector.getEmail(), saved.getInspector().getEmail());
@@ -98,11 +89,11 @@ class TicketValidationServiceTest {
                 "BUS-10"
         );
 
-        assertFalse(service.isValid(command).valid());
+        assertFalse(service.isTicketValid(command).valid());
     }
 
     @Test
-    void singleUseTicketIsValidWhenPunchedInCheckedVehicle() {
+    void singleUseTicketIsTicketValidWhenPunchedInCheckedVehicle() {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         Ticket ticket = Ticket.builder()
@@ -123,7 +114,7 @@ class TicketValidationServiceTest {
                 "BUS-10"
         );
 
-        assertTrue(service.isValid(command).valid());
+        assertTrue(service.isTicketValid(command).valid());
     }
 
     @Test
@@ -148,11 +139,11 @@ class TicketValidationServiceTest {
                 "BUS-11"
         );
 
-        assertFalse(service.isValid(command).valid());
+        assertFalse(service.isTicketValid(command).valid());
     }
 
     @Test
-    void timeBasedTicketIsValidWhenNotExpired() {
+    void timeBasedTicketIsTicketValidWhenNotExpired() {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         LocalDateTime expiresAt = punchedAt.plusMinutes(30);
@@ -175,7 +166,7 @@ class TicketValidationServiceTest {
                 "BUS-10"
         );
 
-        assertTrue(service.isValid(command).valid());
+        assertTrue(service.isTicketValid(command).valid());
     }
 
     @Test
@@ -202,7 +193,7 @@ class TicketValidationServiceTest {
                 "BUS-10"
         );
 
-        assertFalse(service.isValid(command).valid());
+        assertFalse(service.isTicketValid(command).valid());
     }
 
     @Test
@@ -215,7 +206,7 @@ class TicketValidationServiceTest {
         );
         setInspector(inspector.getEmail());
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.isValid(
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.isTicketValid(
                 new ValidateTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10")
         ));
 
@@ -241,7 +232,7 @@ class TicketValidationServiceTest {
         );
         setInspector(passenger.getEmail());
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.isValid(
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.isTicketValid(
                 new ValidateTicketCommand(purchaseId, LocalDateTime.now(), "BUS-10")
         ));
 

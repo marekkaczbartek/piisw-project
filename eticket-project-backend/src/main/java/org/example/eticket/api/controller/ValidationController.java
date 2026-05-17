@@ -20,8 +20,8 @@ public class ValidationController {
     private final TicketValidationService ticketValidationService;
 
     @PostMapping
-    public ResponseEntity<TicketValidationResponse> isValid(@RequestBody TicketValidationRequest request) {
-        ValidationResultView view = ticketValidationService.isValid(new ValidateTicketCommand(
+    public ResponseEntity<TicketValidationResponse> isTicketValid(@RequestBody TicketValidationRequest request) {
+        ValidationResultView view = ticketValidationService.isTicketValid(new ValidateTicketCommand(
                 request.purchaseId(),
                 request.checkedAt(),
                 request.checkedIn()

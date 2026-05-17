@@ -27,7 +27,7 @@ public class TicketValidationService {
     private final UserQueryRepository userQueryRepository;
     private final ValidationCommandRepository validationCommandRepository;
 
-    public ValidationResultView isValid(ValidateTicketCommand command) {
+    public ValidationResultView isTicketValid(ValidateTicketCommand command) {
         if (command.checkedAt() == null || command.checkedIn() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "checkedAt and checkedIn are required");
         }
