@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -109,6 +110,21 @@ class TicketServiceTest {
             }
             int end = Math.min(start + pageable.getPageSize(), tickets.size());
             return new PageImpl<>(tickets.subList(start, end), pageable, tickets.size());
+        }
+
+        @Override
+        public Optional<Ticket> findByTicketTypeAndDiscountTypeAndDurationMinutes(
+                TicketType ticketType,
+                DiscountType discountType,
+                Integer durationMinutes
+        ) {
+            return tickets.stream()
+                    .filter(ticket -> ticketType == ticket.getTicketType())
+                    .filter(ticket -> discountType == ticket.getDiscountType())
+                    .filter(ticket -> durationMinutes == null
+                            ? ticket.getDurationMinutes() == null
+                            : durationMinutes.equals(ticket.getDurationMinutes()))
+                    .findFirst();
         }
     }
 }
