@@ -1,16 +1,37 @@
-<nav class="navbar navbar-expand bg-dark border-bottom border-secondary px-3" data-bs-theme="dark">
-  <a class="navbar-brand" routerLink="/">eBilet</a>
-  <div class="ms-auto">
-    @if (store.isLoggedIn()) {
-      <span class="text-light me-3">{{ store.user()?.email }}</span>
-      <button type="button" class="btn btn-outline-light btn-sm" (click)="logout()">Wyloguj</button>
-    } @else {
-      <a class="btn btn-outline-light btn-sm me-2" routerLink="/login">Zaloguj</a>
-      <a class="btn btn-light btn-sm" routerLink="/register">Zarejestruj się</a>
-    }
-  </div>
-</nav>
+@if (store.isLoggedIn()) {
+  <div class="app-shell">
+    <header class="topbar">
+      <div style="display: flex; align-items: center; gap: 4px;">
+        <a class="brand" [routerLink]="landingUrl()">
+          <span>eBilet</span>
+          <span class="dot"></span>
+        </a>
 
-<main class="container py-4">
+        @if (store.user()?.role === 'PASSENGER') {
+          <nav class="topnav">
+            <a routerLink="/browse" routerLinkActive="active">Oferta</a>
+          </nav>
+        }
+        @if (store.user()?.role === 'INSPECTOR') {
+          <nav class="topnav">
+            <a routerLink="/inspector" routerLinkActive="active">Kontrola</a>
+          </nav>
+        }
+      </div>
+
+      <div class="user-area">
+        <div class="user-line">
+          <div class="what">Zalogowany jako</div>
+          <div class="who">{{ store.user()?.firstName }} {{ store.user()?.lastName }}</div>
+        </div>
+        <button type="button" class="logout" (click)="logout()">Wyloguj</button>
+      </div>
+    </header>
+
+    <router-outlet />
+  </div>
+} @else {
   <router-outlet />
-</main>
+}
+
+<app-toast />
