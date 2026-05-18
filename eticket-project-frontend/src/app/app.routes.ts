@@ -1,8 +1,9 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/auth.guard';
+import { roleGuard } from './auth/role.guard';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'tickets' },
+  { path: '', pathMatch: 'full', redirectTo: 'browse' },
   {
     path: 'login',
     loadComponent: () => import('./auth/login.component').then((m) => m.LoginComponent),
@@ -12,10 +13,10 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/register.component').then((m) => m.RegisterComponent),
   },
   {
-    path: 'tickets',
-    canActivate: [authGuard],
+    path: 'browse',
+    canActivate: [authGuard, roleGuard('PASSENGER')],
     loadComponent: () =>
-      import('./tickets/tickets-page.component').then((m) => m.TicketsPageComponent),
+      import('./browse/browse-page.component').then((m) => m.BrowsePageComponent),
   },
-  { path: '**', redirectTo: 'tickets' },
+  { path: '**', redirectTo: 'browse' },
 ];
