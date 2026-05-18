@@ -1,13 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthApi } from './auth.api';
+import { AuthShellComponent } from './auth-shell.component';
+import { landingUrlFor } from './landing';
 
 @Component({
   selector: 'app-register',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, AuthShellComponent],
   templateUrl: './register.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RegisterComponent {
   private readonly fb = inject(FormBuilder);
@@ -30,12 +33,14 @@ export class RegisterComponent {
     this.error.set(null);
 
     this.authApi.register(this.form.getRawValue()).subscribe({
-      next: () => this.router.navigateByUrl('/tickets'),
+      next: (res) => this.router.navigateByUrl(landingUrlFor(res.role)),
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
-        this.error.set(err.status === 409
-          ? 'Konto z tym adresem e-mail już istnieje.'
-          : 'Rejestracja nie powiodła się. Spróbuj ponownie.');
+        this.error.set(
+          err.status === 409
+            ? 'Konto z tym adresem e-mail już istnieje.'
+            : 'Rejestracja nie powiodła się. Spróbuj ponownie.',
+        );
       },
     });
   }

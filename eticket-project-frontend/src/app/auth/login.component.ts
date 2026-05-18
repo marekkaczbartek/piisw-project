@@ -1,13 +1,16 @@
-import { Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthApi } from './auth.api';
+import { AuthShellComponent } from './auth-shell.component';
+import { landingUrlFor } from './landing';
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, AuthShellComponent],
   templateUrl: './login.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
@@ -29,15 +32,17 @@ export class LoginComponent {
     this.error.set(null);
 
     this.authApi.login(this.form.getRawValue()).subscribe({
-      next: () => {
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/tickets';
-        this.router.navigateByUrl(returnUrl);
+      next: (res) => {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        this.router.navigateByUrl(returnUrl ?? landingUrlFor(res.role));
       },
       error: (err: HttpErrorResponse) => {
         this.submitting.set(false);
-        this.error.set(err.status === 401 || err.status === 403
-          ? 'Nieprawidłowy adres e-mail lub hasło.'
-          : 'Logowanie nie powiodło się. Spróbuj ponownie.');
+        this.error.set(
+          err.status === 401 || err.status === 403
+            ? 'Nieprawidłowy adres e-mail lub hasło.'
+            : 'Logowanie nie powiodło się. Spróbuj ponownie.',
+        );
       },
     });
   }
