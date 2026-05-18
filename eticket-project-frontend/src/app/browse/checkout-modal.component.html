@@ -1,0 +1,72 @@
+<div class="modal-back" (click)="close.emit()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="m-head">
+      <div>
+        <div class="m-kicker">· Potwierdzenie zakupu</div>
+        <div class="m-title">
+          {{ variantLabel(selection().type, selection().variant) }}
+          <span class="muted"> · {{ categoryLabel(selection().type) }}</span>
+        </div>
+      </div>
+      <button type="button" class="x" (click)="close.emit()" aria-label="Zamknij">×</button>
+    </div>
+
+    <div class="m-body">
+      <table class="kv-table">
+        <tbody>
+          <tr>
+            <td class="k">Pasażer</td>
+            <td class="v">
+              {{ user().firstName }} {{ user().lastName }}<br />
+              <span class="mono small dim">{{ user().email }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="k">Taryfa</td>
+            <td class="v">
+              @if (selection().discount === 'REDUCED') {
+                <span style="color: var(--red);">
+                  Ulgowy <span class="dim small">· wymaga legitymacji</span>
+                </span>
+              } @else {
+                Normalny
+              }
+            </td>
+          </tr>
+          <tr>
+            <td class="k">Ważność</td>
+            <td class="v">{{ validityCopy() }}</td>
+          </tr>
+          @if (descriptionCopy(); as desc) {
+            <tr>
+              <td class="k">Opis</td>
+              <td class="v">{{ desc }}</td>
+            </tr>
+          }
+          <tr class="total">
+            <td class="k">Do zapłaty</td>
+            <td class="v">{{ selection().price | currency:'PLN':'symbol':'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      @if (error()) {
+        <div class="form-error" style="margin-bottom: 16px;">{{ error() }}</div>
+      }
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button type="button" class="btn ghost" (click)="close.emit()" [disabled]="busy()">
+          Anuluj
+        </button>
+        <button type="button" class="btn red lg" (click)="confirm()" [disabled]="busy()">
+          @if (busy()) {
+            Przetwarzanie…
+          } @else {
+            Kupuję
+            <span class="arr">→</span>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
