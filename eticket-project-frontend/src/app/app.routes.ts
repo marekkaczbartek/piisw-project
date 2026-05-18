@@ -18,5 +18,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./browse/browse-page.component').then((m) => m.BrowsePageComponent),
   },
+  {
+    path: 'inspector',
+    canActivate: [authGuard, roleGuard('INSPECTOR')],
+    loadComponent: () =>
+      import('./inspector/inspector-page.component').then((m) => m.InspectorPageComponent),
+  },
   { path: '**', redirectTo: 'browse' },
 ];
