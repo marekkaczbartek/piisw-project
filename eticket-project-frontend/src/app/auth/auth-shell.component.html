@@ -1,0 +1,33 @@
+<div class="auth-grid">
+  <aside class="auth-hero">
+    <div class="auth-hero__brand">
+      <span>eBilet</span>
+      <span class="dot"></span>
+    </div>
+    <div class="auth-hero__kicker">Komunikacja miejska</div>
+
+    <h1 class="auth-hero__title">
+      Bilet w<br />
+      <em>dziesięć</em><br />
+      sekund.
+    </h1>
+
+    <p class="auth-hero__lede">
+      Kupuj, kasuj, jedź. Wszystkie bilety w jednym miejscu — bez wydruków,
+      bez kasowników, bez kolejek do biletomatu.
+    </p>
+  </aside>
+
+  <section class="auth-form">
+    <div class="tabs">
+      <a routerLink="/login" routerLinkActive="active" [class.active]="activeMode() === 'login'">
+        Zaloguj się
+      </a>
+      <a routerLink="/register" routerLinkActive="active" [class.active]="activeMode() === 'register'">
+        Załóż konto
+      </a>
+    </div>
+
+    <ng-content />
+  </section>
+</div>
