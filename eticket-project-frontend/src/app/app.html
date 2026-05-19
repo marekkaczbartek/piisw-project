@@ -10,6 +10,7 @@
         @if (store.user()?.role === 'PASSENGER') {
           <nav class="topnav">
             <a routerLink="/browse" routerLinkActive="active">Oferta</a>
+            <a routerLink="/mine" routerLinkActive="active">Moje bilety</a>
           </nav>
         }
         @if (store.user()?.role === 'INSPECTOR') {
