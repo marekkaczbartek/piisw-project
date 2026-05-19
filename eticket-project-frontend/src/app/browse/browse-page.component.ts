@@ -5,7 +5,7 @@ import { CurrencyPipe } from '@angular/common';
 import { environment } from '../../environments/environment';
 import { AuthStore } from '../auth/auth.store';
 import { ToastService } from '../shared/toast.service';
-import { DiscountType, TicketType, TicketsPage } from './browse.types';
+import { DiscountType, TicketType, TicketsResponse } from './browse.types';
 import {
   Column,
   Variant,
@@ -28,13 +28,12 @@ export class BrowsePageComponent {
   private readonly router = inject(Router);
   protected readonly auth = inject(AuthStore);
 
-  protected readonly ticketsRes = httpResource<TicketsPage>(() => ({
+  protected readonly ticketsRes = httpResource<TicketsResponse>(() => ({
     url: `${environment.apiUrl}/tickets`,
-    params: { size: 100 },
   }));
 
   protected readonly columns = computed<Column[]>(() =>
-    groupTickets(this.ticketsRes.value()?._embedded?.ticketResponseList ?? []),
+    groupTickets(this.ticketsRes.value() ?? []),
   );
 
   protected readonly selection = signal<CheckoutSelection | null>(null);

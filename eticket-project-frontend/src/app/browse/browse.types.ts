@@ -8,16 +8,4 @@ export interface TicketResponse {
   durationMinutes: number | null;
 }
 
-export interface PageInfo {
-  size: number;
-  totalElements: number;
-  totalPages: number;
-  number: number;
-}
-
-export interface TicketsPage {
-  _embedded?: {
-    ticketResponseList?: TicketResponse[];
-  };
-  page: PageInfo;
-}
+export type TicketsResponse = TicketResponse[];
