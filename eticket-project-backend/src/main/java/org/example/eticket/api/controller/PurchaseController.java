@@ -132,7 +132,7 @@ public class PurchaseController {
     ) {
         PunchTicketView view = purchaseService.punchTicket(new PunchTicketCommand(
                 purchaseId,
-                request.punchedAt(),
+                LocalDateTime.now(),
                 request.punchedIn()
         ));
         return ResponseEntity.ok(toResponse(view));

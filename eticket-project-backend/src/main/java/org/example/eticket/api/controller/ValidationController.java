@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/validations")
 @RequiredArgsConstructor
@@ -23,10 +25,9 @@ public class ValidationController {
     public ResponseEntity<TicketValidationResponse> isTicketValid(@RequestBody TicketValidationRequest request) {
         ValidationResultView view = ticketValidationService.isTicketValid(new ValidateTicketCommand(
                 request.purchaseId(),
-                request.checkedAt(),
+                LocalDateTime.now(),
                 request.checkedIn()
         ));
         return ResponseEntity.ok(new TicketValidationResponse(view.valid()));
     }
 }
-
