@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/tickets").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.GET, "/purchases/valid", "/purchases/history").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.POST, "/purchases").hasRole("PASSENGER")
+                        .requestMatchers(HttpMethod.POST, "/purchases/*/punch").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.POST, "/validations").hasRole("INSPECTOR")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

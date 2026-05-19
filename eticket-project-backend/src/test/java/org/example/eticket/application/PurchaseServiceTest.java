@@ -2,6 +2,8 @@ package org.example.eticket.application;
 
 import org.example.eticket.application.model.purchase.MakePurchaseCommand;
 import org.example.eticket.application.model.purchase.PurchaseView;
+import org.example.eticket.application.model.purchase.PunchTicketCommand;
+import org.example.eticket.application.model.purchase.PunchTicketView;
 import org.example.eticket.application.service.PurchaseService;
 import org.example.eticket.data.entities.Purchase;
 import org.example.eticket.data.entities.Ticket;
@@ -27,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -176,6 +179,202 @@ class PurchaseServiceTest {
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
+    @Test
+    void punchesSingleUseTicket() {
+        Ticket ticket = Ticket.builder()
+                .ticketType(TicketType.SINGLE_USE)
+                .discountType(DiscountType.NORMAL)
+                .price(new BigDecimal("3.50"))
+                .build();
+        User passenger = passenger("passenger@example.com");
+        Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.of(2024, 5, 10, 8, 0));
+        InMemoryPurchaseCommandRepository purchaseRepository = new InMemoryPurchaseCommandRepository();
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(ticket),
+                new InMemoryUserQueryRepository(passenger),
+                purchaseRepository,
+                new InMemoryPurchaseQueryRepository(purchase)
+        );
+        setPassenger(passenger.getEmail());
+        LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
+
+        PunchTicketView view = service.punchTicket(new PunchTicketCommand(
+                purchase.getId(),
+                punchedAt,
+                "BUS-10"
+        ));
+
+        Purchase saved = purchaseRepository.singleSaved();
+        assertNotNull(saved);
+        assertEquals(punchedAt, saved.getPunchedAt());
+        assertEquals("BUS-10", saved.getPunchedIn());
+        assertNull(saved.getExpiresAt());
+        assertEquals(purchase.getId(), view.id());
+        assertEquals(punchedAt, view.punchedAt());
+        assertEquals("BUS-10", view.punchedIn());
+        assertNull(view.expiresAt());
+    }
+
+    @Test
+    void punchesTimeBasedTicketWithExpiry() {
+        Ticket ticket = Ticket.builder()
+                .ticketType(TicketType.TIME_BASED)
+                .discountType(DiscountType.REDUCED)
+                .price(new BigDecimal("2.00"))
+                .durationMinutes(30)
+                .build();
+        User passenger = passenger("passenger@example.com");
+        Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.of(2024, 5, 10, 8, 0));
+        InMemoryPurchaseCommandRepository purchaseRepository = new InMemoryPurchaseCommandRepository();
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(ticket),
+                new InMemoryUserQueryRepository(passenger),
+                purchaseRepository,
+                new InMemoryPurchaseQueryRepository(purchase)
+        );
+        setPassenger(passenger.getEmail());
+        LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
+
+        PunchTicketView view = service.punchTicket(new PunchTicketCommand(
+                purchase.getId(),
+                punchedAt,
+                "TRAM-2"
+        ));
+
+        Purchase saved = purchaseRepository.singleSaved();
+        assertEquals(punchedAt.plusMinutes(30), saved.getExpiresAt());
+        assertEquals(punchedAt.plusMinutes(30), view.expiresAt());
+    }
+
+    @Test
+    void throwsWhenPunchPurchaseDoesNotExist() {
+        User passenger = passenger("passenger@example.com");
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(),
+                new InMemoryUserQueryRepository(passenger),
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository()
+        );
+        setPassenger(passenger.getEmail());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+                new PunchTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10")
+        ));
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+    }
+
+    @Test
+    void throwsWhenPunchPassengerNotAuthenticated() {
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(),
+                new InMemoryUserQueryRepository(),
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository()
+        );
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+                new PunchTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10")
+        ));
+
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
+    }
+
+    @Test
+    void throwsWhenPunchUserIsNotPassenger() {
+        User inspector = User.builder()
+                .id(UUID.randomUUID())
+                .email("inspector@example.com")
+                .role(UserRole.INSPECTOR)
+                .build();
+        Ticket ticket = Ticket.builder()
+                .ticketType(TicketType.SINGLE_USE)
+                .build();
+        Purchase purchase = purchase(UUID.randomUUID(), inspector, ticket, LocalDateTime.now());
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(ticket),
+                new InMemoryUserQueryRepository(inspector),
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository(purchase)
+        );
+        setPassenger(inspector.getEmail());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+                new PunchTicketCommand(purchase.getId(), LocalDateTime.now(), "BUS-10")
+        ));
+
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
+    @Test
+    void throwsWhenPunchPassengerIsNotOwner() {
+        User passenger = passenger("passenger@example.com");
+        User owner = passenger("owner@example.com");
+        Ticket ticket = Ticket.builder()
+                .ticketType(TicketType.SINGLE_USE)
+                .build();
+        Purchase purchase = purchase(UUID.randomUUID(), owner, ticket, LocalDateTime.now());
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(ticket),
+                new InMemoryUserQueryRepository(passenger),
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository(purchase)
+        );
+        setPassenger(passenger.getEmail());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+                new PunchTicketCommand(purchase.getId(), LocalDateTime.now(), "BUS-10")
+        ));
+
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
+    @Test
+    void throwsWhenPunchTicketAlreadyPunched() {
+        Ticket ticket = Ticket.builder()
+                .ticketType(TicketType.SINGLE_USE)
+                .build();
+        User passenger = passenger("passenger@example.com");
+        Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.now());
+        purchase.setPunchedAt(LocalDateTime.of(2024, 5, 10, 9, 0));
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(ticket),
+                new InMemoryUserQueryRepository(passenger),
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository(purchase)
+        );
+        setPassenger(passenger.getEmail());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+                new PunchTicketCommand(purchase.getId(), LocalDateTime.of(2024, 5, 10, 10, 0), "BUS-10")
+        ));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void throwsWhenPunchPeriodTicket() {
+        Ticket ticket = Ticket.builder()
+                .ticketType(TicketType.PERIOD)
+                .durationMinutes(24 * 60)
+                .build();
+        User passenger = passenger("passenger@example.com");
+        Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.now());
+        PurchaseService service = new PurchaseService(
+                new InMemoryTicketQueryRepository(ticket),
+                new InMemoryUserQueryRepository(passenger),
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository(purchase)
+        );
+        setPassenger(passenger.getEmail());
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+                new PunchTicketCommand(purchase.getId(), LocalDateTime.now(), "BUS-10")
+        ));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
     private static User passenger(String email) {
         return User.builder()
                 .id(java.util.UUID.randomUUID())
@@ -188,6 +387,15 @@ class PurchaseServiceTest {
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(email, null, List.of())
         );
+    }
+
+    private static Purchase purchase(UUID id, User passenger, Ticket ticket, LocalDateTime boughtAt) {
+        return Purchase.builder()
+                .id(id)
+                .passenger(passenger)
+                .ticket(ticket)
+                .boughtAt(boughtAt)
+                .build();
     }
 
     private record InMemoryTicketQueryRepository(List<Ticket> tickets) implements TicketQueryRepository {
@@ -259,6 +467,14 @@ class PurchaseServiceTest {
     }
 
     private record InMemoryPurchaseQueryRepository(List<Purchase> purchases) implements PurchaseQueryRepository {
+
+        private InMemoryPurchaseQueryRepository(Purchase... purchases) {
+            this(List.of(purchases));
+        }
+
+        private InMemoryPurchaseQueryRepository() {
+            this(List.of());
+        }
 
         @Override
         public Optional<Purchase> findById(java.util.UUID id) {

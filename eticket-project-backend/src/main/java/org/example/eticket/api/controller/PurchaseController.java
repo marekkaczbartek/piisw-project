@@ -4,10 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.example.eticket.api.dto.purchase.MakePurchaseRequest;
 import org.example.eticket.api.dto.purchase.PurchaseResponse;
 import org.example.eticket.api.dto.purchase.PurchaseHistoryResponse;
+import org.example.eticket.api.dto.purchase.PunchTicketRequest;
+import org.example.eticket.api.dto.purchase.PunchTicketResponse;
 import org.example.eticket.api.dto.purchase.ValidTicketResponse;
 import org.example.eticket.application.model.purchase.GetPurchaseHistoryQuery;
 import org.example.eticket.application.model.purchase.GetValidTicketsQuery;
 import org.example.eticket.application.model.purchase.MakePurchaseCommand;
+import org.example.eticket.application.model.purchase.PunchTicketCommand;
+import org.example.eticket.application.model.purchase.PunchTicketView;
 import org.example.eticket.application.model.purchase.PurchaseHistoryView;
 import org.example.eticket.application.model.purchase.PurchaseView;
 import org.example.eticket.application.model.purchase.ValidTicketView;
@@ -18,12 +22,14 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/purchases")
@@ -72,6 +78,20 @@ public class PurchaseController {
         );
     }
 
+    private static PunchTicketResponse toResponse(PunchTicketView view) {
+        return new PunchTicketResponse(
+                view.id(),
+                view.ticketType(),
+                view.discountType(),
+                view.price(),
+                view.durationMinutes(),
+                view.boughtAt(),
+                view.punchedAt(),
+                view.punchedIn(),
+                view.expiresAt()
+        );
+    }
+
     @PostMapping
     public ResponseEntity<PurchaseResponse> makePurchase(@RequestBody MakePurchaseRequest request) {
         PurchaseView view = purchaseService.makePurchase(new MakePurchaseCommand(
@@ -102,5 +122,18 @@ public class PurchaseController {
                 .getPurchaseHistory(new GetPurchaseHistoryQuery(pageable))
                 .map(PurchaseController::toResponse);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{purchaseId}/punch")
+    public ResponseEntity<PunchTicketResponse> punchTicket(
+            @PathVariable UUID purchaseId,
+            @RequestBody PunchTicketRequest request
+    ) {
+        PunchTicketView view = purchaseService.punchTicket(new PunchTicketCommand(
+                purchaseId,
+                request.punchedAt(),
+                request.punchedIn()
+        ));
+        return ResponseEntity.ok(toResponse(view));
     }
 }
