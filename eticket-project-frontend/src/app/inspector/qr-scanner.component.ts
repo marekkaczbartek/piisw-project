@@ -53,7 +53,6 @@ export class QrScannerComponent implements OnDestroy {
   }
 
   private async start(): Promise<void> {
-    // html5-qrcode looks the element up by id, so make it unique per instance.
     const id = `${REGION_ID}-${Math.random().toString(36).slice(2)}`;
     this.region().nativeElement.id = id;
 
@@ -79,7 +78,6 @@ export class QrScannerComponent implements OnDestroy {
       if (this.scanner.isScanning) await this.scanner.stop();
       await this.scanner.clear();
     } catch {
-      /* nothing useful we can do at teardown */
     }
     this.scanner = null;
   }
