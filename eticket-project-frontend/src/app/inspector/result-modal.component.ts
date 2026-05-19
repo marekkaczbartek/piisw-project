@@ -12,7 +12,6 @@ export interface ValidationResult {
   error: boolean;
   code: string;
   vehicle: string;
-  checkedAt: string;
 }
 
 @Component({

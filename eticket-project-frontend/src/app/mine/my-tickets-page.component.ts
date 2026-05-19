@@ -30,7 +30,6 @@ interface EnrichedItem extends PurchaseHistoryItem {
 export class MyTicketsPageComponent {
   protected readonly page = signal(0);
 
-  // ticks once a second so countdowns stay live
   private readonly now = toSignal(
     interval(1000).pipe(
       startWith(0),
