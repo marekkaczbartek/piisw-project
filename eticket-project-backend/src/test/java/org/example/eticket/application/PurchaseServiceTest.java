@@ -10,6 +10,7 @@ import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.enums.UserRole;
 import org.example.eticket.data.repositories.PurchaseCommandRepository;
+import org.example.eticket.data.repositories.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.TicketQueryRepository;
 import org.example.eticket.data.repositories.UserQueryRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -52,7 +53,8 @@ class PurchaseServiceTest {
         PurchaseService service = new PurchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 new InMemoryUserQueryRepository(passenger),
-                purchaseRepository
+                purchaseRepository,
+                new InMemoryPurchaseQueryRepository(List.of())
         );
         setPassenger(passenger.getEmail());
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
@@ -94,7 +96,8 @@ class PurchaseServiceTest {
         PurchaseService service = new PurchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 new InMemoryUserQueryRepository(passenger),
-                purchaseRepository
+                purchaseRepository,
+                new InMemoryPurchaseQueryRepository(List.of())
         );
         setPassenger(passenger.getEmail());
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
@@ -118,7 +121,8 @@ class PurchaseServiceTest {
         PurchaseService service = new PurchaseService(
                 new InMemoryTicketQueryRepository(),
                 new InMemoryUserQueryRepository(passenger),
-                new InMemoryPurchaseCommandRepository()
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository(List.of())
         );
         setPassenger(passenger.getEmail());
 
@@ -134,7 +138,8 @@ class PurchaseServiceTest {
         PurchaseService service = new PurchaseService(
                 new InMemoryTicketQueryRepository(),
                 new InMemoryUserQueryRepository(),
-                new InMemoryPurchaseCommandRepository()
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository(List.of())
         );
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.makePurchase(
@@ -159,7 +164,8 @@ class PurchaseServiceTest {
         PurchaseService service = new PurchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 new InMemoryUserQueryRepository(inspector),
-                new InMemoryPurchaseCommandRepository()
+                new InMemoryPurchaseCommandRepository(),
+                new InMemoryPurchaseQueryRepository(List.of())
         );
         setPassenger(inspector.getEmail());
 
@@ -193,11 +199,6 @@ class PurchaseServiceTest {
         @Override
         public List<Ticket> findAll() {
             return List.copyOf(tickets);
-        }
-
-        @Override
-        public org.springframework.data.domain.Page<Ticket> findAll(org.springframework.data.domain.Pageable pageable) {
-            return new org.springframework.data.domain.PageImpl<>(List.copyOf(tickets), pageable, tickets.size());
         }
 
         @Override
@@ -256,5 +257,27 @@ class PurchaseServiceTest {
             return saved.get(0);
         }
     }
-}
 
+    private record InMemoryPurchaseQueryRepository(List<Purchase> purchases) implements PurchaseQueryRepository {
+
+        @Override
+        public Optional<Purchase> findById(java.util.UUID id) {
+            return purchases.stream()
+                    .filter(purchase -> id.equals(purchase.getId()))
+                    .findFirst();
+        }
+
+        @Override
+        public List<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(java.util.UUID passengerId) {
+            return List.copyOf(purchases);
+        }
+
+        @Override
+        public org.springframework.data.domain.Page<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(
+                java.util.UUID passengerId,
+                org.springframework.data.domain.Pageable pageable
+        ) {
+            return new org.springframework.data.domain.PageImpl<>(List.of(), pageable, 0);
+        }
+    }
+}

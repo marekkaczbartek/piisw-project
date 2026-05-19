@@ -3,8 +3,6 @@ package org.example.eticket.data.repositories;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,11 +20,6 @@ public class TicketQueryRepositoryAdapter implements TicketQueryRepository {
     @Override
     public List<Ticket> findAll() {
         return ticketJpaRepository.findAll();
-    }
-
-    @Override
-    public Page<Ticket> findAll(Pageable pageable) {
-        return ticketJpaRepository.findAll(pageable);
     }
 
     @Override
