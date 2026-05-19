@@ -7,12 +7,3 @@ export interface TicketValidationRequest {
 export interface TicketValidationResponse {
   valid: boolean;
 }
-
-export interface ValidationEntry {
-  id: string;
-  checkedAt: string;
-  vehicle: string;
-  purchaseId: string;
-  valid: boolean | null;
-  error: boolean;
-}
