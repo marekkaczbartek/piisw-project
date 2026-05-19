@@ -7,6 +7,7 @@ import { interval, map, startWith } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { categoryLabel, variantLabel } from '../browse/browse.grouping';
 import { TicketType } from '../browse/browse.types';
+import { QrCodeComponent } from '../shared/qr-code.component';
 import { PurchaseHistoryItem, PurchaseStatus, SpringPage } from './mine.types';
 import { formatDuration, formatTimeUntil, purchaseStatus } from './purchase.status';
 
@@ -21,7 +22,7 @@ interface EnrichedItem extends PurchaseHistoryItem {
 
 @Component({
   selector: 'app-my-tickets-page',
-  imports: [CurrencyPipe, DatePipe, RouterLink],
+  imports: [CurrencyPipe, DatePipe, RouterLink, QrCodeComponent],
   templateUrl: './my-tickets-page.component.html',
   styleUrl: './my-tickets-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
