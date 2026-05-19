@@ -39,12 +39,11 @@ public class SecurityConfig {
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/h2-console/**",
+                        .requestMatchers("/login", "/register", "/purchases/*/punch", "/h2-console/**",
                                 "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/tickets").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.GET, "/purchases/valid", "/purchases/history").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.POST, "/purchases").hasRole("PASSENGER")
-                        .requestMatchers(HttpMethod.PATCH, "/purchases/*/punch").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.POST, "/validations").hasRole("INSPECTOR")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
