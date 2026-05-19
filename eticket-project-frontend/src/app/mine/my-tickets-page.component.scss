@@ -4,6 +4,15 @@
   gap: 14px;
 }
 
+.ticket-card .tc-right {
+  gap: 12px;
+  app-qr-code {
+    padding: 8px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
+}
+
 .pager {
   display: flex;
   align-items: center;
