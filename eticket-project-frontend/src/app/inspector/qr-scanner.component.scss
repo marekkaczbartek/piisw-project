@@ -9,9 +9,6 @@
   &__region {
     width: 100%;
     height: 100%;
-
-    /* html5-qrcode injects a <video> element inside this region.
-       The library's default fit is `contain`, which letterboxes — override. */
     ::ng-deep video {
       width: 100% !important;
       height: 100% !important;
