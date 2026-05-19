@@ -21,7 +21,7 @@
     <a class="btn red lg" routerLink="/browse">Przejdź do oferty <span class="arr">→</span></a>
   </div>
 } @else {
-  <div style="display: flex; flex-direction: column; gap: 14px;">
+  <div class="ticket-list">
     @for (p of tickets(); track p.id) {
       <article class="ticket-card">
         <div>
@@ -57,4 +57,19 @@
       </article>
     }
   </div>
+
+  @if (totalPages() > 1) {
+    <nav class="pager" aria-label="Strony">
+      <button type="button" class="btn ghost sm" (click)="prev()" [disabled]="page() === 0">
+        ← Poprzednia
+      </button>
+      <span class="pager__indicator mono small">
+        Strona {{ page() + 1 }} z {{ totalPages() }}
+        <span class="dim"> · {{ totalElements() }} biletów</span>
+      </span>
+      <button type="button" class="btn ghost sm" (click)="next()" [disabled]="page() >= totalPages() - 1">
+        Następna →
+      </button>
+    </nav>
+  }
 }

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { httpResource } from '@angular/common/http';
 import { CurrencyPipe, DatePipe } from '@angular/common';
@@ -9,6 +9,8 @@ import { categoryLabel, variantLabel } from '../browse/browse.grouping';
 import { TicketType } from '../browse/browse.types';
 import { PurchaseHistoryItem, PurchaseStatus, SpringPage } from './mine.types';
 import { formatDuration, formatTimeUntil, purchaseStatus } from './purchase.status';
+
+const PAGE_SIZE = 5;
 
 interface EnrichedItem extends PurchaseHistoryItem {
   status: PurchaseStatus;
@@ -21,9 +23,12 @@ interface EnrichedItem extends PurchaseHistoryItem {
   selector: 'app-my-tickets-page',
   imports: [CurrencyPipe, DatePipe, RouterLink],
   templateUrl: './my-tickets-page.component.html',
+  styleUrl: './my-tickets-page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class MyTicketsPageComponent {
+  protected readonly page = signal(0);
+
   // ticks once a second so countdowns stay live
   private readonly now = toSignal(
     interval(1000).pipe(
@@ -35,7 +40,7 @@ export class MyTicketsPageComponent {
 
   protected readonly historyRes = httpResource<SpringPage<PurchaseHistoryItem>>(() => ({
     url: `${environment.apiUrl}/purchases/history`,
-    params: { size: 100, page: 0 },
+    params: { size: PAGE_SIZE, page: this.page() },
   }));
 
   protected readonly tickets = computed<EnrichedItem[]>(() => {
@@ -52,6 +57,17 @@ export class MyTicketsPageComponent {
       };
     });
   });
+
+  protected readonly totalPages = computed(() => this.historyRes.value()?.totalPages ?? 0);
+  protected readonly totalElements = computed(() => this.historyRes.value()?.totalElements ?? 0);
+
+  protected prev(): void {
+    if (this.page() > 0) this.page.update((p) => p - 1);
+  }
+
+  protected next(): void {
+    if (this.page() < this.totalPages() - 1) this.page.update((p) => p + 1);
+  }
 }
 
 function ticketLabel(type: TicketType, durationMinutes: number | null): string {
