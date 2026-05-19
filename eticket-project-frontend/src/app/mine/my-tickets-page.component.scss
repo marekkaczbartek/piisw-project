@@ -4,13 +4,20 @@
   gap: 14px;
 }
 
-.ticket-card .tc-right {
+.ticket-card .tc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  app-qr-code {
-    padding: 8px;
-    background: var(--paper);
-    border: 1px solid var(--line);
-  }
+  margin-bottom: 8px;
+
+  .tc-kicker { margin-bottom: 0; }
+}
+
+.ticket-card .tc-right app-qr-code {
+  padding: 8px;
+  background: var(--paper);
+  border: 1px solid var(--line);
 }
 
 .pager {
