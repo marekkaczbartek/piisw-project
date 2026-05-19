@@ -41,6 +41,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/register", "/h2-console/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/tickets").hasRole("PASSENGER")
+                        .requestMatchers(HttpMethod.GET, "/purchases/valid", "/purchases/history").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.POST, "/purchases").hasRole("PASSENGER")
                         .requestMatchers(HttpMethod.POST, "/validations").hasRole("INSPECTOR")
                         .anyRequest().authenticated())

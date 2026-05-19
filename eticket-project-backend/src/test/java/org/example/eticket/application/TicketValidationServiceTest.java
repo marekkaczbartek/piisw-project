@@ -289,6 +289,30 @@ class TicketValidationServiceTest {
         public Optional<Purchase> findById(UUID id) {
             return Optional.ofNullable(purchases.get(id));
         }
+
+        @Override
+        public List<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId) {
+            return purchases.values().stream()
+                    .filter(purchase -> purchase.getPassenger() != null)
+                    .filter(purchase -> passengerId.equals(purchase.getPassenger().getId()))
+                    .sorted(Comparator.comparing(Purchase::getBoughtAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                            .reversed())
+                    .toList();
+        }
+
+        @Override
+        public org.springframework.data.domain.Page<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(
+                UUID passengerId,
+                org.springframework.data.domain.Pageable pageable
+        ) {
+            List<Purchase> sorted = findAllByPassengerIdOrderByBoughtAtDesc(passengerId);
+            int start = Math.toIntExact(pageable.getOffset());
+            if (start >= sorted.size()) {
+                return new org.springframework.data.domain.PageImpl<>(List.of(), pageable, sorted.size());
+            }
+            int end = Math.min(start + pageable.getPageSize(), sorted.size());
+            return new org.springframework.data.domain.PageImpl<>(sorted.subList(start, end), pageable, sorted.size());
+        }
     }
 
     private record InMemoryUserQueryRepository(Map<String, User> users) implements UserQueryRepository {

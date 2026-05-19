@@ -17,6 +17,6 @@ public class TicketModelAssembler implements RepresentationModelAssembler<Ticket
     public @NonNull EntityModel<TicketResponse> toModel(@NonNull TicketResponse response) {
         return EntityModel.of(
                 response,
-                linkTo(methodOn(TicketController.class).getAllTickets(null)).withRel("tickets"));
+                linkTo(methodOn(TicketController.class).getAllTickets()).withRel("tickets"));
     }
 }

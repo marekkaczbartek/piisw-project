@@ -4,14 +4,9 @@ import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.repositories.TicketQueryRepository;
-import org.example.eticket.application.model.ticket.GetAllTicketsQuery;
 import org.example.eticket.application.model.ticket.TicketView;
 import org.example.eticket.application.service.TicketService;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -29,7 +24,7 @@ class TicketServiceTest {
         TicketService ticketService = new TicketService(ticketReadRepository);
 
         // when
-        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(PageRequest.of(0, 20))).getContent();
+        List<TicketView> result = ticketService.getAllTickets();
 
         // then
         assertEquals(List.of(), result);
@@ -54,7 +49,7 @@ class TicketServiceTest {
         TicketService ticketService = new TicketService(ticketReadRepository);
 
         // when
-        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(PageRequest.of(0, 20))).getContent();
+        List<TicketView> result = ticketService.getAllTickets();
 
         // then
         List<TicketView> expected = List.of(
@@ -65,7 +60,7 @@ class TicketServiceTest {
     }
 
     @Test
-    void returnsRequestedPageOfTickets() {
+    void returnsAllTicketsWhenRequested() {
         // given
         Ticket first = Ticket.builder()
                 .ticketType(TicketType.SINGLE_USE)
@@ -82,10 +77,11 @@ class TicketServiceTest {
         TicketService ticketService = new TicketService(ticketReadRepository);
 
         // when
-        List<TicketView> result = ticketService.getAllTickets(new GetAllTicketsQuery(PageRequest.of(1, 1))).getContent();
+        List<TicketView> result = ticketService.getAllTickets();
 
         // then
         List<TicketView> expected = List.of(
+                new TicketView(TicketType.SINGLE_USE, DiscountType.NORMAL, new BigDecimal("3.50"), null),
                 new TicketView(TicketType.TIME_BASED, DiscountType.REDUCED, new BigDecimal("2.00"), 30)
         );
         assertEquals(expected, result);
@@ -100,16 +96,6 @@ class TicketServiceTest {
         @Override
         public List<Ticket> findAll() {
             return List.copyOf(tickets);
-        }
-
-        @Override
-        public Page<Ticket> findAll(Pageable pageable) {
-            int start = Math.toIntExact(pageable.getOffset());
-            if (start >= tickets.size()) {
-                return new PageImpl<>(List.of(), pageable, tickets.size());
-            }
-            int end = Math.min(start + pageable.getPageSize(), tickets.size());
-            return new PageImpl<>(tickets.subList(start, end), pageable, tickets.size());
         }
 
         @Override
