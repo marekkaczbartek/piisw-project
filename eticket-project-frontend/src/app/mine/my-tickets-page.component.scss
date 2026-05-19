@@ -4,20 +4,23 @@
   gap: 14px;
 }
 
-.ticket-card .tc-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
+.ticket-card .tc-right {
+  align-items: stretch;
+  gap: 8px;
+  width: 136px; // QR (120) + padding (8 × 2)
 
-  .tc-kicker { margin-bottom: 0; }
-}
+  .tc-status {
+    justify-content: center;
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    padding: 4px 8px;
+  }
 
-.ticket-card .tc-right app-qr-code {
-  padding: 8px;
-  background: var(--paper);
-  border: 1px solid var(--line);
+  app-qr-code {
+    padding: 8px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+  }
 }
 
 .pager {
