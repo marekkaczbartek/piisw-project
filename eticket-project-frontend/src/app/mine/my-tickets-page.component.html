@@ -14,23 +14,15 @@
   <div class="form-error">Nie udało się pobrać biletów. Odśwież stronę, aby spróbować ponownie.</div>
 }
 
-<div class="tabs">
-  @for (t of tabs; track t.key) {
-    <button type="button" [class.active]="tab() === t.key" (click)="setTab(t.key)">
-      {{ t.label }} <span class="count">{{ counts()[t.key] }}</span>
-    </button>
-  }
-</div>
-
-@if (visible().length === 0) {
+@if (tickets().length === 0 && !historyRes.isLoading()) {
   <div class="empty">
     <div class="big">Pusta <em>kieszeń.</em></div>
-    <div class="desc">Nie masz tu jeszcze żadnego biletu w tej kategorii</div>
+    <div class="desc">Nie masz tu jeszcze żadnego biletu</div>
     <a class="btn red lg" routerLink="/browse">Przejdź do oferty <span class="arr">→</span></a>
   </div>
 } @else {
   <div style="display: flex; flex-direction: column; gap: 14px;">
-    @for (p of visible(); track p.id) {
+    @for (p of tickets(); track p.id) {
       <article class="ticket-card">
         <div>
           <div class="tc-kicker">
