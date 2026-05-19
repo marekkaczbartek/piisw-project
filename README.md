@@ -73,3 +73,34 @@ erDiagram
     users         ||--o{ validations : "inspector records"
     purchases     ||--o{ validations : "checked in"
 ```
+
+# deployment
+
+Local run with Docker Compose:
+
+```
+docker compose up --build
+```
+
+Frontend on http://localhost:8081, backend on internal port 8080, Postgres on internal port 5432.
+
+## Coolify
+
+Two services from this repo:
+
+1. **backend** — base directory `eticket-project-backend`, Dockerfile build, exposes `8080`, internal only. Env vars:
+   ```
+   SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/<db>
+   SPRING_DATASOURCE_USERNAME=<user>
+   SPRING_DATASOURCE_PASSWORD=<password>
+   APP_JWT_SECRET=<random base64, 32+ bytes>
+   APP_CORS_ALLOWED_ORIGINS=https://<frontend-domain>
+   ```
+2. **frontend** — base directory `eticket-project-frontend`, Dockerfile build, exposes `80`, attach the public domain. Env vars:
+   ```
+   BACKEND_HOST=<backend service name>
+   BACKEND_PORT=8080
+   ```
+
+Frontend nginx proxies `/api/*` to the backend over the internal network, so only one public domain is needed.
+
