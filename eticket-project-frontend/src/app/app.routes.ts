@@ -19,6 +19,12 @@ export const routes: Routes = [
       import('./browse/browse-page.component').then((m) => m.BrowsePageComponent),
   },
   {
+    path: 'mine',
+    canActivate: [authGuard, roleGuard('PASSENGER')],
+    loadComponent: () =>
+      import('./mine/my-tickets-page.component').then((m) => m.MyTicketsPageComponent),
+  },
+  {
     path: 'inspector',
     canActivate: [authGuard, roleGuard('INSPECTOR')],
     loadComponent: () =>

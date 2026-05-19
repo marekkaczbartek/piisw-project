@@ -1,0 +1,68 @@
+<div class="page-head">
+  <div>
+    <div class="page-kicker">· Twoje zakupy</div>
+    <h1>Moje <em>bilety.</em></h1>
+  </div>
+  <a class="btn ghost" routerLink="/browse">+ Kup nowy bilet</a>
+</div>
+
+@if (historyRes.isLoading()) {
+  <div class="muted small">Ładowanie biletów…</div>
+}
+
+@if (historyRes.error()) {
+  <div class="form-error">Nie udało się pobrać biletów. Odśwież stronę, aby spróbować ponownie.</div>
+}
+
+<div class="tabs">
+  @for (t of tabs; track t.key) {
+    <button type="button" [class.active]="tab() === t.key" (click)="setTab(t.key)">
+      {{ t.label }} <span class="count">{{ counts()[t.key] }}</span>
+    </button>
+  }
+</div>
+
+@if (visible().length === 0) {
+  <div class="empty">
+    <div class="big">Pusta <em>kieszeń.</em></div>
+    <div class="desc">Nie masz tu jeszcze żadnego biletu w tej kategorii</div>
+    <a class="btn red lg" routerLink="/browse">Przejdź do oferty <span class="arr">→</span></a>
+  </div>
+} @else {
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    @for (p of visible(); track p.id) {
+      <article class="ticket-card">
+        <div>
+          <div class="tc-kicker">
+            {{ p.categoryPl }} · {{ p.discountType === 'REDUCED' ? 'Ulgowy' : 'Normalny' }}
+          </div>
+          <div class="tc-title">
+            {{ p.label }}<em [style.color]="p.status.kind === 'expired' ? 'var(--ink-3)' : 'var(--red)'">.</em>
+          </div>
+          <div class="tc-sub">{{ p.subline }}</div>
+          <div class="tc-meta">
+            <div class="cell">
+              <div class="k">Kod biletu</div>
+              <div class="v">{{ p.id }}</div>
+            </div>
+            <div class="cell">
+              <div class="k">Cena</div>
+              <div class="v">{{ p.price | currency:'PLN':'symbol':'1.2-2' }}</div>
+            </div>
+            <div class="cell">
+              <div class="k">Zakupiony</div>
+              <div class="v">{{ p.boughtAt | date:'dd.MM.yyyy · HH:mm' }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="tc-right">
+          <span class="status" [class.active]="p.status.kind === 'active'"
+                              [class.unused]="p.status.kind === 'unused'"
+                              [class.expired]="p.status.kind === 'expired'">
+            <span class="dot"></span>{{ p.status.label }}
+          </span>
+        </div>
+      </article>
+    }
+  </div>
+}

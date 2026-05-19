@@ -1,0 +1,103 @@
+import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { httpResource } from '@angular/common/http';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { interval, map, startWith } from 'rxjs';
+import { environment } from '../../environments/environment';
+import { categoryLabel, variantLabel } from '../browse/browse.grouping';
+import { TicketType } from '../browse/browse.types';
+import { PurchaseHistoryItem, PurchaseStatus, PurchaseStatusKind, SpringPage } from './mine.types';
+import { formatDuration, formatTimeUntil, purchaseStatus } from './purchase.status';
+
+type Tab = 'all' | PurchaseStatusKind;
+
+interface EnrichedItem extends PurchaseHistoryItem {
+  status: PurchaseStatus;
+  label: string;
+  categoryPl: string;
+  subline: string;
+}
+
+const TABS: ReadonlyArray<{ key: Tab; label: string }> = [
+  { key: 'all',     label: 'Wszystkie' },
+  { key: 'active',  label: 'Aktywne' },
+  { key: 'unused',  label: 'Nieskasowane' },
+  { key: 'expired', label: 'Wygasłe' },
+];
+
+@Component({
+  selector: 'app-my-tickets-page',
+  imports: [CurrencyPipe, DatePipe, RouterLink],
+  templateUrl: './my-tickets-page.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class MyTicketsPageComponent {
+  protected readonly tabs = TABS;
+  protected readonly tab = signal<Tab>('all');
+
+  // ticks once a second so countdowns stay live
+  private readonly now = toSignal(
+    interval(1000).pipe(
+      startWith(0),
+      map(() => new Date()),
+    ),
+    { initialValue: new Date() },
+  );
+
+  protected readonly historyRes = httpResource<SpringPage<PurchaseHistoryItem>>(() => ({
+    url: `${environment.apiUrl}/purchases/history`,
+    params: { size: 100, page: 0 },
+  }));
+
+  protected readonly enriched = computed<EnrichedItem[]>(() => {
+    const items = this.historyRes.value()?.content ?? [];
+    const now = this.now();
+    return items.map((p) => {
+      const status = purchaseStatus(p, now);
+      return {
+        ...p,
+        status,
+        label: ticketLabel(p.ticketType, p.durationMinutes),
+        categoryPl: categoryLabel(p.ticketType),
+        subline: cardSubline(p, status, now),
+      };
+    });
+  });
+
+  protected readonly counts = computed(() => {
+    const all = this.enriched();
+    return {
+      all: all.length,
+      active: all.filter((x) => x.status.kind === 'active').length,
+      unused: all.filter((x) => x.status.kind === 'unused').length,
+      expired: all.filter((x) => x.status.kind === 'expired').length,
+    };
+  });
+
+  protected readonly visible = computed(() => {
+    const t = this.tab();
+    return t === 'all' ? this.enriched() : this.enriched().filter((x) => x.status.kind === t);
+  });
+
+  protected setTab(t: Tab): void {
+    this.tab.set(t);
+  }
+}
+
+function ticketLabel(type: TicketType, durationMinutes: number | null): string {
+  return variantLabel(type, { durationMinutes, prices: {} });
+}
+
+function cardSubline(p: PurchaseHistoryItem, status: PurchaseStatus, now: Date): string {
+  if (p.ticketType === 'SINGLE_USE') {
+    if (!p.punchedAt) return 'Nieskasowany — skasuj w pojeździe';
+    return `Skasowano · pojazd ${p.punchedIn ?? '—'}`;
+  }
+  if (p.expiresAt) {
+    if (status.kind === 'expired') return 'Wygasł';
+    const left = formatTimeUntil(p.expiresAt, now);
+    return left ? `Wygasa za ${left}` : 'Wygasł';
+  }
+  return `Aktywuj — ważny ${formatDuration(p.durationMinutes)} od skasowania`;
+}

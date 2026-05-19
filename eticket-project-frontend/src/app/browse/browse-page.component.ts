@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { httpResource } from '@angular/common/http';
 import { CurrencyPipe } from '@angular/common';
 import { environment } from '../../environments/environment';
@@ -24,6 +25,7 @@ import { PurchaseResponse } from './purchase.types';
 })
 export class BrowsePageComponent {
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
   protected readonly auth = inject(AuthStore);
 
   protected readonly ticketsRes = httpResource<TicketsPage>(() => ({
@@ -49,8 +51,9 @@ export class BrowsePageComponent {
 
   protected onPurchased(p: PurchaseResponse, selection: CheckoutSelection): void {
     const label = variantLabel(selection.type, selection.variant);
-    this.toast.show(`Zakupiono — ${categoryLabel(p.ticketType)} · ${label} · ${p.id}`);
+    this.toast.show(`Zakupiono — ${categoryLabel(p.ticketType)} · ${label}`);
     this.selection.set(null);
+    this.router.navigateByUrl('/mine');
   }
 
   protected variantLabel(type: TicketType, v: Variant): string {
