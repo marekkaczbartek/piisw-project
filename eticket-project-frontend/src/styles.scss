@@ -662,3 +662,126 @@ html, body {
   margin-top: 8px;
   letter-spacing: 0.02em;
 }
+
+@media (max-width: 900px) {
+  .app-shell {
+    padding: 0 24px 48px;
+  }
+
+  .topbar {
+    padding: 20px 0 14px;
+    margin-bottom: 24px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .brand {
+    font-size: 22px;
+    gap: 8px;
+  }
+
+  .topnav {
+    margin-left: 16px;
+    gap: 2px;
+  }
+  .topnav a, .topnav button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .user-area {
+    gap: 10px;
+    margin-left: auto;
+  }
+  .user-area .user-line .what { display: none; }
+  .user-area .user-line .who {
+    font-size: 13px;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .user-area button.logout {
+    padding: 6px 10px;
+  }
+
+  .page-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .page-head h1 {
+    font-size: 38px;
+  }
+
+  .cat-grid {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .ticket-card {
+    grid-template-columns: 1fr;
+    padding: 20px;
+    gap: 16px;
+  }
+  .ticket-card .tc-right {
+    align-items: flex-start;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .ticket-card .tc-title { font-size: 28px; }
+  .ticket-card .tc-meta { gap: 16px; }
+
+  .tabs a, .tabs button {
+    font-size: 18px;
+    margin-right: 20px;
+  }
+
+  .modal .m-head {
+    padding: 18px 20px 12px;
+    gap: 12px;
+  }
+  .modal .m-head .m-title { font-size: 22px; }
+  .modal .m-body { padding: 18px 20px 22px; }
+
+  .kv-table td.k { width: 110px; font-size: 10px; }
+  .kv-table tr.total td.v { font-size: 30px; }
+}
+
+@media (max-width: 560px) {
+  .app-shell {
+    padding: 0 16px 40px;
+  }
+
+  .topbar {
+    padding: 16px 0 12px;
+    margin-bottom: 20px;
+  }
+
+  .user-area .user-line { display: none; }
+
+  .topbar > div:first-child {
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 8px !important;
+  }
+  .topnav {
+    width: 100%;
+    margin-left: 0;
+    order: 3;
+    border-top: 1px solid var(--line);
+    padding-top: 10px;
+  }
+  .topnav a, .topnav button { padding: 6px 8px; }
+
+  .page-head h1 { font-size: 30px; }
+
+  .empty { padding: 48px 16px; }
+  .empty .big { font-size: 32px; }
+}
