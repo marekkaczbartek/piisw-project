@@ -53,17 +53,16 @@ export class InspectorPageComponent {
 
     this.busy.set(true);
     this.inputError.set(null);
-    const checkedAt = nowLocal();
 
-    this.api.validate({ purchaseId: code, checkedAt, checkedIn: vehicle }).subscribe({
+    this.api.validate({ purchaseId: code, checkedIn: vehicle }).subscribe({
       next: (res) => {
-        this.result.set({ valid: res.valid, error: false, code, vehicle, checkedAt });
+        this.result.set({ valid: res.valid, error: false, code, vehicle });
         this.busy.set(false);
         this.form.controls.code.reset('');
       },
       error: (err: HttpErrorResponse) => {
         const notFound = err.status === 404;
-        this.result.set({ valid: notFound ? false : null, error: true, code, vehicle, checkedAt });
+        this.result.set({ valid: notFound ? false : null, error: true, code, vehicle });
         this.busy.set(false);
         this.form.controls.code.reset('');
       },

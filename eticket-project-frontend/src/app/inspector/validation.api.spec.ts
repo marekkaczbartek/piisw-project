@@ -22,7 +22,6 @@ describe('ValidationApi', () => {
   it('POSTs the body to /validations and forwards the response', () => {
     const body: TicketValidationRequest = {
       purchaseId: 'p-1',
-      checkedAt: '2026-05-19T12:34:56',
       checkedIn: 'BUS-42',
     };
     const response: TicketValidationResponse = { valid: true };
@@ -42,7 +41,7 @@ describe('ValidationApi', () => {
     let received: TicketValidationResponse | undefined;
 
     api
-      .validate({ purchaseId: 'p-2', checkedAt: '2026-05-19T12:00:00', checkedIn: 'BUS-7' })
+      .validate({ purchaseId: 'p-2', checkedIn: 'BUS-7' })
       .subscribe((r) => (received = r));
 
     httpMock.expectOne(`${environment.apiUrl}/validations`).flush({ valid: false });
@@ -54,7 +53,7 @@ describe('ValidationApi', () => {
     let status: number | undefined;
 
     api
-      .validate({ purchaseId: 'p-3', checkedAt: '2026-05-19T12:00:00', checkedIn: 'BUS-1' })
+      .validate({ purchaseId: 'p-3', checkedIn: 'BUS-1' })
       .subscribe({ next: () => fail('should error'), error: (e) => (status = e.status) });
 
     httpMock
