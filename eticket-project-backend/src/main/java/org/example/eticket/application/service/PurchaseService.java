@@ -7,6 +7,8 @@ import org.example.eticket.application.model.purchase.MakePurchaseCommand;
 import org.example.eticket.application.model.purchase.PurchaseHistoryView;
 import org.example.eticket.application.model.purchase.PurchaseView;
 import org.example.eticket.application.model.purchase.ValidTicketView;
+import org.example.eticket.application.model.purchase.PunchTicketCommand;
+import org.example.eticket.application.model.purchase.PunchTicketView;
 import org.example.eticket.data.entities.Purchase;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.entities.User;
@@ -59,6 +61,38 @@ public class PurchaseService {
 
         Purchase saved = purchaseCommandRepository.save(purchase);
         return toView(saved);
+    }
+
+    public PunchTicketView punchTicket(PunchTicketCommand command) {
+        if (command.purchaseId() == null || command.punchedAt() == null || command.punchedIn() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "purchaseId, punchedAt and punchedIn are required");
+        }
+
+        User passenger = resolvePassenger();
+        Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase not found"));
+        if (purchase.getPassenger() == null || purchase.getPassenger().getEmail() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Purchase passenger is required");
+        }
+        if (!purchase.getPassenger().getEmail().equals(passenger.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Passenger is not the owner");
+        }
+        if (purchase.getPunchedAt() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket already punched");
+        }
+
+        Ticket ticket = purchase.getTicket();
+        if (ticket == null || ticket.getTicketType() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket type is required");
+        }
+
+        LocalDateTime expiresAt = resolvePunchExpiry(ticket, command.punchedAt());
+        purchase.setPunchedAt(command.punchedAt());
+        purchase.setPunchedIn(command.punchedIn());
+        purchase.setExpiresAt(expiresAt);
+
+        Purchase saved = purchaseCommandRepository.save(purchase);
+        return toPunchView(saved);
     }
 
     public Page<ValidTicketView> getValidTickets(GetValidTicketsQuery query) {
@@ -116,6 +150,20 @@ public class PurchaseService {
             return null;
         }
         return boughtAt.plusMinutes(durationMinutes);
+    }
+
+    private static LocalDateTime resolvePunchExpiry(Ticket ticket, LocalDateTime punchedAt) {
+        if (ticket.getTicketType() == TicketType.PERIOD) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Period tickets do not require punching");
+        }
+        if (ticket.getTicketType() == TicketType.SINGLE_USE) {
+            return null;
+        }
+        Integer durationMinutes = ticket.getDurationMinutes();
+        if (durationMinutes == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "durationMinutes is required");
+        }
+        return punchedAt.plusMinutes(durationMinutes);
     }
 
     private static ValidTicketView toValidTicketView(Purchase purchase) {
@@ -230,6 +278,21 @@ public class PurchaseService {
                 ticket.getPrice(),
                 ticket.getDurationMinutes(),
                 purchase.getBoughtAt(),
+                purchase.getExpiresAt()
+        );
+    }
+
+    private static PunchTicketView toPunchView(Purchase purchase) {
+        Ticket ticket = purchase.getTicket();
+        return new PunchTicketView(
+                purchase.getId(),
+                ticket.getTicketType(),
+                ticket.getDiscountType(),
+                ticket.getPrice(),
+                ticket.getDurationMinutes(),
+                purchase.getBoughtAt(),
+                purchase.getPunchedAt(),
+                purchase.getPunchedIn(),
                 purchase.getExpiresAt()
         );
     }
