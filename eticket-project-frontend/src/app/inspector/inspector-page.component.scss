@@ -1,11 +1,5 @@
-.inspector-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
+.inspector-form {
+  max-width: 520px;
 }
 
 .code-field {
@@ -48,24 +42,4 @@ app-qr-scanner {
   display: block;
   max-width: 320px;
   margin: 0 0 22px;
-}
-
-.history-list {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
-  border: 1px solid var(--line);
-}
-
-.history-row {
-  display: grid;
-  grid-template-columns: 80px 1fr auto;
-  align-items: center;
-  gap: 16px;
-  padding: 14px 18px;
-  border-top: 1px solid var(--line);
-
-  &:first-child {
-    border-top: none;
-  }
 }
