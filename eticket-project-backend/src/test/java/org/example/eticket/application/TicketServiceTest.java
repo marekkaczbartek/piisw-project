@@ -1,11 +1,11 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.model.ticket.TicketView;
+import org.example.eticket.application.service.ticket.TicketService;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
-import org.example.eticket.data.repositories.TicketQueryRepository;
-import org.example.eticket.application.model.ticket.TicketView;
-import org.example.eticket.application.service.TicketService;
+import org.example.eticket.data.repositories.ticket.TicketQueryRepository;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

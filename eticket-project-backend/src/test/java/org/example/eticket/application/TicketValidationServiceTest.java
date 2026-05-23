@@ -2,17 +2,17 @@ package org.example.eticket.application;
 
 import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
-import org.example.eticket.application.service.TicketValidationService;
-import org.example.eticket.application.service.UserResolver;
+import org.example.eticket.application.service.auth.UserResolver;
+import org.example.eticket.application.service.validation.ValidationService;
 import org.example.eticket.data.entities.Purchase;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.entities.Validation;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.enums.UserRole;
-import org.example.eticket.data.repositories.PurchaseQueryRepository;
-import org.example.eticket.data.repositories.UserQueryRepository;
-import org.example.eticket.data.repositories.ValidationCommandRepository;
+import org.example.eticket.data.repositories.purchase.PurchaseQueryRepository;
+import org.example.eticket.data.repositories.user.UserQueryRepository;
+import org.example.eticket.data.repositories.validation.ValidationCommandRepository;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -35,7 +35,7 @@ class TicketValidationServiceTest {
         Purchase purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
         User inspector = inspector("inspector@example.com");
         InMemoryValidationCommandRepository validationRepository = new InMemoryValidationCommandRepository();
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
                 validationRepository,
                 new UserResolver(new InMemoryUserQueryRepository(inspector))
@@ -72,7 +72,7 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
                 new InMemoryValidationCommandRepository(),
                 new UserResolver(new InMemoryUserQueryRepository(inspector))
@@ -100,7 +100,7 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
                 new InMemoryValidationCommandRepository(),
                 new UserResolver(new InMemoryUserQueryRepository(inspector))
@@ -128,7 +128,7 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
                 new InMemoryValidationCommandRepository(),
                 new UserResolver(new InMemoryUserQueryRepository(inspector))
@@ -158,7 +158,7 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
                 new InMemoryValidationCommandRepository(),
                 new UserResolver(new InMemoryUserQueryRepository(inspector))
@@ -188,7 +188,7 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
                 new InMemoryValidationCommandRepository(),
                 new UserResolver(new InMemoryUserQueryRepository(inspector))
@@ -210,7 +210,7 @@ class TicketValidationServiceTest {
     void throwsWhenPurchaseDoesNotExist() {
         // given
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(),
                 new InMemoryValidationCommandRepository(),
                 new UserResolver(new InMemoryUserQueryRepository(inspector))

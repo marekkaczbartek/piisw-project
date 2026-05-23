@@ -1,16 +1,14 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.service.auth.JwtService;
 import org.example.eticket.config.JwtProperties;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.enums.UserRole;
-import org.example.eticket.application.service.JwtService;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class JwtServiceTest {
 
