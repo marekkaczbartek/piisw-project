@@ -1,4 +1,6 @@
 package org.example.eticket.api.dto.purchase;
 
-public record PunchTicketRequest(String punchedIn) {
+import jakarta.validation.constraints.NotBlank;
+
+public record PunchTicketRequest(@NotBlank String punchedIn) {
 }

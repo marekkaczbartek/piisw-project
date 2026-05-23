@@ -5,6 +5,7 @@ import org.example.eticket.api.dto.ticket.TicketResponse;
 import org.example.eticket.application.model.ticket.TicketView;
 import org.example.eticket.application.service.TicketService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +29,7 @@ public class TicketController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<List<TicketResponse>> getAllTickets() {
         List<TicketResponse> response = ticketService.getAllTickets().stream()
                 .map(TicketController::toResponse)

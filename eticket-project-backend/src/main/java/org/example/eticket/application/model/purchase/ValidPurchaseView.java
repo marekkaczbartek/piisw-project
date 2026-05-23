@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public record ValidTicketView(
+public record ValidPurchaseView(
         UUID id,
         TicketType ticketType,
         DiscountType discountType,

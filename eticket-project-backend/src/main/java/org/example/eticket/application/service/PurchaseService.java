@@ -1,29 +1,18 @@
 package org.example.eticket.application.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.eticket.application.model.purchase.GetPurchaseHistoryQuery;
-import org.example.eticket.application.model.purchase.GetValidTicketsQuery;
-import org.example.eticket.application.model.purchase.MakePurchaseCommand;
-import org.example.eticket.application.model.purchase.PurchaseHistoryView;
-import org.example.eticket.application.model.purchase.PurchaseView;
-import org.example.eticket.application.model.purchase.ValidTicketView;
-import org.example.eticket.application.model.purchase.PunchTicketCommand;
-import org.example.eticket.application.model.purchase.PunchTicketView;
+import org.example.eticket.application.model.purchase.*;
 import org.example.eticket.data.entities.Purchase;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.enums.TicketType;
-import org.example.eticket.data.enums.UserRole;
 import org.example.eticket.data.repositories.PurchaseCommandRepository;
 import org.example.eticket.data.repositories.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.TicketQueryRepository;
-import org.example.eticket.data.repositories.UserQueryRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,15 +24,12 @@ import java.util.List;
 public class PurchaseService {
 
     private final TicketQueryRepository ticketQueryRepository;
-    private final UserQueryRepository userQueryRepository;
     private final PurchaseCommandRepository purchaseCommandRepository;
     private final PurchaseQueryRepository purchaseQueryRepository;
+    private final UserResolver userResolver;
 
-    public PurchaseView makePurchase(MakePurchaseCommand command) {
-        if (command.boughtAt() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "boughtAt is required");
-        }
-        User passenger = resolvePassenger();
+    public PurchaseView makePurchase(MakePurchaseCommand command, String passengerEmail) {
+        User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
         Ticket ticket = ticketQueryRepository.findByTicketTypeAndDiscountTypeAndDurationMinutes(
                 command.ticketType(),
                 command.discountType(),
@@ -64,19 +50,8 @@ public class PurchaseService {
     }
 
     public PunchTicketView punchTicket(PunchTicketCommand command) {
-        if (command.purchaseId() == null || command.punchedAt() == null || command.punchedIn() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "purchaseId, punchedAt and punchedIn are required");
-        }
-
-        User passenger = resolvePassenger();
         Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase not found"));
-        if (purchase.getPassenger() == null || purchase.getPassenger().getEmail() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Purchase passenger is required");
-        }
-        if (!purchase.getPassenger().getEmail().equals(passenger.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Passenger is not the owner");
-        }
         if (purchase.getPunchedAt() != null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket already punched");
         }
@@ -95,15 +70,9 @@ public class PurchaseService {
         return toPunchView(saved);
     }
 
-    public Page<ValidTicketView> getValidTickets(GetValidTicketsQuery query) {
-        if (query.checkedAt() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "checkedAt is required");
-        }
-        if (query.pageable() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pageable is required");
-        }
-        User passenger = resolvePassenger();
-        List<ValidTicketView> filtered = purchaseQueryRepository
+    public Page<ValidPurchaseView> getValidTickets(GetValidPurchasesQuery query, String passengerEmail) {
+        User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
+        List<ValidPurchaseView> filtered = purchaseQueryRepository
                 .findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId()).stream()
                 .filter(purchase -> isValidAt(purchase, query.checkedAt()))
                 .map(PurchaseService::toValidTicketView)
@@ -117,28 +86,10 @@ public class PurchaseService {
         return new PageImpl<>(filtered.subList(start, end), pageable, filtered.size());
     }
 
-    public Page<PurchaseHistoryView> getPurchaseHistory(GetPurchaseHistoryQuery query) {
-        if (query.pageable() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "pageable is required");
-        }
-        User passenger = resolvePassenger();
+    public Page<PurchaseHistoryView> getPurchaseHistory(GetPurchaseHistoryQuery query, String passengerEmail) {
+        User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
         return purchaseQueryRepository.findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId(), query.pageable())
                 .map(PurchaseService::toHistoryView);
-    }
-
-    private User resolvePassenger() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Passenger not authenticated");
-        }
-
-        String email = authentication.getName();
-        User passenger = userQueryRepository.findByEmail(email)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Passenger not found"));
-        if (passenger.getRole() != UserRole.PASSENGER) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Passenger role required");
-        }
-        return passenger;
     }
 
     private static LocalDateTime resolveExpiry(Ticket ticket, LocalDateTime boughtAt) {
@@ -166,9 +117,9 @@ public class PurchaseService {
         return punchedAt.plusMinutes(durationMinutes);
     }
 
-    private static ValidTicketView toValidTicketView(Purchase purchase) {
+    private static ValidPurchaseView toValidTicketView(Purchase purchase) {
         Ticket ticket = purchase.getTicket();
-        return new ValidTicketView(
+        return new ValidPurchaseView(
                 purchase.getId(),
                 ticket.getTicketType(),
                 ticket.getDiscountType(),
