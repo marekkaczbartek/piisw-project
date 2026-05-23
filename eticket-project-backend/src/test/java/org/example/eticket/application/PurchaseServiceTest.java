@@ -1,9 +1,12 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.exception.NotFoundException;
+import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
+import org.example.eticket.application.exception.TicketAlreadyPunchedException;
 import org.example.eticket.application.model.purchase.MakePurchaseCommand;
-import org.example.eticket.application.model.purchase.PurchaseView;
 import org.example.eticket.application.model.purchase.PunchTicketCommand;
 import org.example.eticket.application.model.purchase.PunchTicketView;
+import org.example.eticket.application.model.purchase.PurchaseView;
 import org.example.eticket.application.service.PurchaseService;
 import org.example.eticket.application.service.UserResolver;
 import org.example.eticket.data.entities.Purchase;
@@ -17,22 +20,12 @@ import org.example.eticket.data.repositories.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.TicketQueryRepository;
 import org.example.eticket.data.repositories.UserQueryRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class PurchaseServiceTest {
 
@@ -119,12 +112,12 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.makePurchase(
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.makePurchase(
                 new MakePurchaseCommand(TicketType.SINGLE_USE, DiscountType.NORMAL, null, LocalDateTime.now()),
                 passenger.getEmail()
         ));
 
-        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        assertEquals("Ticket not found", ex.getMessage());
     }
 
     @Test
@@ -202,11 +195,11 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.punchTicket(
                 new PunchTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10")
         ));
 
-        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        assertEquals("Purchase not found", ex.getMessage());
     }
 
     @Test
@@ -247,11 +240,11 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
+        TicketAlreadyPunchedException ex = assertThrows(TicketAlreadyPunchedException.class, () -> service.punchTicket(
                 new PunchTicketCommand(purchase.getId(), LocalDateTime.of(2024, 5, 10, 10, 0), "BUS-10")
         ));
 
-        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertEquals("Ticket already punched", ex.getMessage());
     }
 
     @Test
@@ -269,11 +262,11 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.punchTicket(
-                new PunchTicketCommand(purchase.getId(), LocalDateTime.now(), "BUS-10")
-        ));
+        PeriodTicketPunchNotAllowedException ex = assertThrows(PeriodTicketPunchNotAllowedException.class,
+                () -> service.punchTicket(new PunchTicketCommand(purchase.getId(), LocalDateTime.now(), "BUS-10"))
+        );
 
-        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+        assertEquals("Period tickets do not require punching", ex.getMessage());
     }
 
     private static User passenger(String email) {
@@ -358,7 +351,7 @@ class PurchaseServiceTest {
             if (saved.isEmpty()) {
                 return null;
             }
-            return saved.get(0);
+            return saved.getFirst();
         }
     }
 

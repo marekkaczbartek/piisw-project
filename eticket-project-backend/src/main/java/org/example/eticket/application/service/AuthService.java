@@ -1,16 +1,16 @@
 package org.example.eticket.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.eticket.application.exception.ConflictException;
+import org.example.eticket.application.exception.UnauthorizedException;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.enums.UserRole;
 import org.example.eticket.data.repositories.UserJpaRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import org.example.eticket.application.model.auth.AuthView;
 import org.example.eticket.application.model.auth.LoginCommand;
@@ -38,7 +38,7 @@ public class AuthService {
 
     public AuthView register(RegisterCommand command) {
         if (userRepository.existsByEmail(command.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+            throw new ConflictException("Email already registered");
         }
 
         User user = userRepository.save(User.builder()
@@ -57,11 +57,11 @@ public class AuthService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(command.email(), command.password()));
         } catch (AuthenticationException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
+            throw new UnauthorizedException("Invalid credentials");
         }
 
         User user = userRepository.findByEmail(command.email())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         return toView(user, jwtService.generateToken(user));
     }

@@ -1,6 +1,10 @@
 package org.example.eticket.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.eticket.application.exception.FieldRequiredException;
+import org.example.eticket.application.exception.NotFoundException;
+import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
+import org.example.eticket.application.exception.TicketAlreadyPunchedException;
 import org.example.eticket.application.model.purchase.*;
 import org.example.eticket.data.entities.Purchase;
 import org.example.eticket.data.entities.Ticket;
@@ -12,9 +16,7 @@ import org.example.eticket.data.repositories.TicketQueryRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -34,7 +36,7 @@ public class PurchaseService {
                 command.ticketType(),
                 command.discountType(),
                 command.durationMinutes()
-        ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Ticket not found"));
+        ).orElseThrow(() -> new NotFoundException("Ticket not found"));
 
         LocalDateTime expiresAt = resolveExpiry(ticket, command.boughtAt());
 
@@ -51,14 +53,14 @@ public class PurchaseService {
 
     public PunchTicketView punchTicket(PunchTicketCommand command) {
         Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase not found"));
+                .orElseThrow(() -> new NotFoundException("Purchase not found"));
         if (purchase.getPunchedAt() != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket already punched");
+            throw new TicketAlreadyPunchedException();
         }
 
         Ticket ticket = purchase.getTicket();
         if (ticket == null || ticket.getTicketType() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ticket type is required");
+            throw new FieldRequiredException("ticketType");
         }
 
         LocalDateTime expiresAt = resolvePunchExpiry(ticket, command.punchedAt());
@@ -105,14 +107,14 @@ public class PurchaseService {
 
     private static LocalDateTime resolvePunchExpiry(Ticket ticket, LocalDateTime punchedAt) {
         if (ticket.getTicketType() == TicketType.PERIOD) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Period tickets do not require punching");
+            throw new PeriodTicketPunchNotAllowedException();
         }
         if (ticket.getTicketType() == TicketType.SINGLE_USE) {
             return null;
         }
         Integer durationMinutes = ticket.getDurationMinutes();
         if (durationMinutes == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "durationMinutes is required");
+            throw new FieldRequiredException("durationMinutes");
         }
         return punchedAt.plusMinutes(durationMinutes);
     }

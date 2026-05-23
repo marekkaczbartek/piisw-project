@@ -1,5 +1,6 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
 import org.example.eticket.application.service.TicketValidationService;
 import org.example.eticket.application.service.UserResolver;
@@ -13,8 +14,6 @@ import org.example.eticket.data.repositories.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.UserQueryRepository;
 import org.example.eticket.data.repositories.ValidationCommandRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -219,13 +218,13 @@ class TicketValidationServiceTest {
         ValidateTicketCommand command = new ValidateTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10");
 
         // when
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.isTicketValid(
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.isTicketValid(
                 command,
                 inspector.getEmail()
         ));
 
         // then
-        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
+        assertEquals("Purchase not found", ex.getMessage());
     }
 
     private static User inspector(String email) {

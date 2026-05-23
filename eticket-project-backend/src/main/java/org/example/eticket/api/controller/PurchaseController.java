@@ -65,7 +65,7 @@ public class PurchaseController {
 
     @PatchMapping("/{purchaseId}/punch")
     public ResponseEntity<PunchTicketResponse> punchTicket(
-            @PathVariable UUID purchaseId,
+            @PathVariable("purchaseId") UUID purchaseId,
             @Valid @RequestBody PunchTicketRequest request) {
 
         PunchTicketView view = purchaseService.punchTicket(new PunchTicketCommand(

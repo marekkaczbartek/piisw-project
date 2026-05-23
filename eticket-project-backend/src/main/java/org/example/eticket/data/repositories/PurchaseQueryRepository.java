@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface PurchaseQueryRepository {
+
     Optional<Purchase> findById(UUID id);
 
     List<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId);

@@ -1,6 +1,7 @@
 package org.example.eticket.application.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
 import org.example.eticket.application.model.validation.ValidationResultView;
 import org.example.eticket.data.entities.Purchase;
@@ -9,9 +10,7 @@ import org.example.eticket.data.entities.User;
 import org.example.eticket.data.entities.Validation;
 import org.example.eticket.data.repositories.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.ValidationCommandRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -25,7 +24,7 @@ public class TicketValidationService {
 
     public ValidationResultView isTicketValid(ValidateTicketCommand command, String inspectorEmail) {
         Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Purchase not found"));
+                .orElseThrow(() -> new NotFoundException("Purchase not found"));
         User inspector = userResolver.resolveByEmail(inspectorEmail, "Inspector not found");
         boolean result = isValidForTicket(purchase, command);
 
