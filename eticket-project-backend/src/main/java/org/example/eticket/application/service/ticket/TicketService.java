@@ -14,6 +14,13 @@ public class TicketService {
 
     private final TicketQueryRepository ticketReadRepository;
 
+    public List<TicketView> getAllTickets() {
+        return ticketReadRepository.findAll()
+                .stream()
+                .map(TicketService::toView)
+                .toList();
+    }
+
     private static TicketView toView(Ticket ticket) {
         return new TicketView(
                 ticket.getTicketType(),
@@ -21,12 +28,5 @@ public class TicketService {
                 ticket.getPrice(),
                 ticket.getDurationMinutes()
         );
-    }
-
-    public List<TicketView> getAllTickets() {
-        return ticketReadRepository.findAll()
-                .stream()
-                .map(TicketService::toView)
-                .toList();
     }
 }

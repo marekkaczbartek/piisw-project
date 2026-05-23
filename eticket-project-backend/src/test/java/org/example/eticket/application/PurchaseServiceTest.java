@@ -31,6 +31,7 @@ class PurchaseServiceTest {
 
     @Test
     void createsSingleUsePurchaseWithoutExpiry() {
+        // given
         Ticket ticket = Ticket.builder()
                 .ticketType(TicketType.SINGLE_USE)
                 .discountType(DiscountType.NORMAL)
@@ -47,6 +48,7 @@ class PurchaseServiceTest {
         );
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
 
+        // when
         PurchaseView view = service.makePurchase(new MakePurchaseCommand(
                 ticket.getTicketType(),
                 ticket.getDiscountType(),
@@ -54,6 +56,7 @@ class PurchaseServiceTest {
                 boughtAt
         ), passenger.getEmail());
 
+        // then
         Purchase saved = purchaseRepository.singleSaved();
         assertNotNull(saved);
         assertEquals(passenger.getEmail(), saved.getPassenger().getEmail());
@@ -73,6 +76,7 @@ class PurchaseServiceTest {
 
     @Test
     void createsPeriodPurchaseWithExpiryAtPurchaseTime() {
+        // given
         Ticket ticket = Ticket.builder()
                 .ticketType(TicketType.PERIOD)
                 .discountType(DiscountType.REDUCED)
@@ -89,6 +93,7 @@ class PurchaseServiceTest {
         );
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
 
+        // when
         PurchaseView view = service.makePurchase(new MakePurchaseCommand(
                 ticket.getTicketType(),
                 ticket.getDiscountType(),
@@ -96,6 +101,7 @@ class PurchaseServiceTest {
                 boughtAt
         ), passenger.getEmail());
 
+        // then
         Purchase saved = purchaseRepository.singleSaved();
         assertNotNull(saved);
         assertEquals(boughtAt.plusMinutes(ticket.getDurationMinutes()), saved.getExpiresAt());
@@ -104,6 +110,7 @@ class PurchaseServiceTest {
 
     @Test
     void throwsWhenTicketDoesNotExist() {
+        // given
         User passenger = passenger("passenger@example.com");
         PurchaseService service = new PurchaseService(
                 new InMemoryTicketQueryRepository(),
@@ -112,16 +119,19 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
+        // when
         NotFoundException ex = assertThrows(NotFoundException.class, () -> service.makePurchase(
                 new MakePurchaseCommand(TicketType.SINGLE_USE, DiscountType.NORMAL, null, LocalDateTime.now()),
                 passenger.getEmail()
         ));
 
+        // then
         assertEquals("Ticket not found", ex.getMessage());
     }
 
     @Test
     void punchesSingleUseTicket() {
+        // given
         Ticket ticket = Ticket.builder()
                 .ticketType(TicketType.SINGLE_USE)
                 .discountType(DiscountType.NORMAL)
@@ -138,12 +148,14 @@ class PurchaseServiceTest {
         );
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
 
+        // when
         PunchTicketView view = service.punchTicket(new PunchTicketCommand(
                 purchase.getId(),
                 punchedAt,
                 "BUS-10"
         ));
 
+        // then
         Purchase saved = purchaseRepository.singleSaved();
         assertNotNull(saved);
         assertEquals(punchedAt, saved.getPunchedAt());
@@ -157,6 +169,7 @@ class PurchaseServiceTest {
 
     @Test
     void punchesTimeBasedTicketWithExpiry() {
+        // given
         Ticket ticket = Ticket.builder()
                 .ticketType(TicketType.TIME_BASED)
                 .discountType(DiscountType.REDUCED)
@@ -174,12 +187,14 @@ class PurchaseServiceTest {
         );
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
 
+        // when
         PunchTicketView view = service.punchTicket(new PunchTicketCommand(
                 purchase.getId(),
                 punchedAt,
                 "TRAM-2"
         ));
 
+        // then
         Purchase saved = purchaseRepository.singleSaved();
         assertEquals(punchedAt.plusMinutes(30), saved.getExpiresAt());
         assertEquals(punchedAt.plusMinutes(30), view.expiresAt());
@@ -187,6 +202,7 @@ class PurchaseServiceTest {
 
     @Test
     void throwsWhenPunchPurchaseDoesNotExist() {
+        // given
         User passenger = passenger("passenger@example.com");
         PurchaseService service = new PurchaseService(
                 new InMemoryTicketQueryRepository(),
@@ -195,15 +211,18 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
+        // when
         NotFoundException ex = assertThrows(NotFoundException.class, () -> service.punchTicket(
                 new PunchTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10")
         ));
 
+        // then
         assertEquals("Purchase not found", ex.getMessage());
     }
 
     @Test
     void punchesTicketWithoutPassengerOwnershipCheck() {
+        // given
         User owner = passenger("owner@example.com");
         Ticket ticket = Ticket.builder()
                 .ticketType(TicketType.SINGLE_USE)
@@ -216,17 +235,20 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(owner))
         );
 
+        // when
         PunchTicketView view = service.punchTicket(new PunchTicketCommand(
                 purchase.getId(),
                 LocalDateTime.now(),
                 "BUS-10"
         ));
 
+        // then
         assertEquals(purchase.getId(), view.id());
     }
 
     @Test
     void throwsWhenPunchTicketAlreadyPunched() {
+        // given
         Ticket ticket = Ticket.builder()
                 .ticketType(TicketType.SINGLE_USE)
                 .build();
@@ -240,15 +262,18 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
+        // when
         TicketAlreadyPunchedException ex = assertThrows(TicketAlreadyPunchedException.class, () -> service.punchTicket(
                 new PunchTicketCommand(purchase.getId(), LocalDateTime.of(2024, 5, 10, 10, 0), "BUS-10")
         ));
 
+        // then
         assertEquals("Ticket already punched", ex.getMessage());
     }
 
     @Test
     void throwsWhenPunchPeriodTicket() {
+        // given
         Ticket ticket = Ticket.builder()
                 .ticketType(TicketType.PERIOD)
                 .durationMinutes(24 * 60)
@@ -262,10 +287,12 @@ class PurchaseServiceTest {
                 new UserResolver(new InMemoryUserQueryRepository(passenger))
         );
 
+        // when
         PeriodTicketPunchNotAllowedException ex = assertThrows(PeriodTicketPunchNotAllowedException.class,
                 () -> service.punchTicket(new PunchTicketCommand(purchase.getId(), LocalDateTime.now(), "BUS-10"))
         );
 
+        // then
         assertEquals("Period tickets do not require punching", ex.getMessage());
     }
 

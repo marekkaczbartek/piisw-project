@@ -19,15 +19,6 @@ public class TicketController {
 
     private final TicketService ticketService;
 
-    private static TicketResponse toResponse(TicketView ticketView) {
-        return new TicketResponse(
-                ticketView.ticketType(),
-                ticketView.price(),
-                ticketView.discountType(),
-                ticketView.durationMinutes()
-        );
-    }
-
     @GetMapping
     @PreAuthorize("hasRole('PASSENGER')")
     public ResponseEntity<List<TicketResponse>> getAllTickets() {
@@ -35,5 +26,14 @@ public class TicketController {
                 .map(TicketController::toResponse)
                 .toList();
         return ResponseEntity.ok(response);
+    }
+
+    private static TicketResponse toResponse(TicketView ticketView) {
+        return new TicketResponse(
+                ticketView.ticketType(),
+                ticketView.price(),
+                ticketView.discountType(),
+                ticketView.durationMinutes()
+        );
     }
 }

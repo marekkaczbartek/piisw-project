@@ -1,5 +1,6 @@
 package org.example.eticket.api.controller;
 
+import org.example.eticket.api.controller.purchase.PurchaseController;
 import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
 import org.example.eticket.application.model.purchase.PunchTicketCommand;
 import org.example.eticket.application.model.purchase.PunchTicketView;
@@ -51,6 +52,7 @@ class PurchaseControllerTest {
 
     @Test
     void punchTicketIsAccessibleWithoutAuthentication() throws Exception {
+        // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
@@ -66,13 +68,15 @@ class PurchaseControllerTest {
                 "BUS-10",
                 expiresAt
         );
-
         when(purchaseService.punchTicket(any(PunchTicketCommand.class))).thenReturn(view);
 
-        mockMvc.perform(patch("/purchases/{purchaseId}/punch", purchaseId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"punchedIn\":\"BUS-10\"}"))
-                .andExpect(status().isOk())
+        // when
+        var response = mockMvc.perform(patch("/purchases/{purchaseId}/punch", purchaseId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"punchedIn\":\"BUS-10\"}"));
+
+        // then
+        response.andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(purchaseId.toString()))
                 .andExpect(jsonPath("$.punchedIn").value("BUS-10"));
 
@@ -84,14 +88,18 @@ class PurchaseControllerTest {
 
     @Test
     void punchTicketReturnsBadRequestWhenServiceThrows() throws Exception {
+        // given
         UUID purchaseId = UUID.randomUUID();
         when(purchaseService.punchTicket(any(PunchTicketCommand.class)))
                 .thenThrow(new PeriodTicketPunchNotAllowedException());
 
-        mockMvc.perform(patch("/purchases/{purchaseId}/punch", purchaseId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"punchedIn\":\"BUS-10\"}"))
-                .andExpect(status().isBadRequest())
+        // when
+        var response = mockMvc.perform(patch("/purchases/{purchaseId}/punch", purchaseId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"punchedIn\":\"BUS-10\"}"));
+
+        // then
+        response.andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").value("Period tickets do not require punching"));
     }

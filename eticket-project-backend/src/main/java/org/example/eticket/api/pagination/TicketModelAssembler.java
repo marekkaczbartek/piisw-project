@@ -1,7 +1,7 @@
 package org.example.eticket.api.pagination;
 
 import lombok.NonNull;
-import org.example.eticket.api.controller.TicketController;
+import org.example.eticket.api.controller.ticket.TicketController;
 import org.example.eticket.api.dto.ticket.TicketResponse;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;

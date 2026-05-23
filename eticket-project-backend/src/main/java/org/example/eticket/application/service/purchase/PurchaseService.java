@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+// TODO refactor
+
 @Service
 @RequiredArgsConstructor
 public class PurchaseService {

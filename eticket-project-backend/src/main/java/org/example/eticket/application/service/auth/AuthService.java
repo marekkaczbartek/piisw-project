@@ -24,17 +24,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
 
-    private static AuthView toView(User user, String token) {
-        return new AuthView(
-                token,
-                user.getId(),
-                user.getEmail(),
-                user.getRole(),
-                user.getFirstName(),
-                user.getLastName()
-        );
-    }
-
     public AuthView register(RegisterCommand command) {
         if (userRepository.existsByEmail(command.email())) {
             throw new ConflictException("Email already registered");
@@ -63,5 +52,16 @@ public class AuthService {
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         return toView(user, jwtService.generateToken(user));
+    }
+
+    private static AuthView toView(User user, String token) {
+        return new AuthView(
+                token,
+                user.getId(),
+                user.getEmail(),
+                user.getRole(),
+                user.getFirstName(),
+                user.getLastName()
+        );
     }
 }

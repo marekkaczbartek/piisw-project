@@ -21,17 +21,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    private static AuthResponse toResponse(AuthView view) {
-        return new AuthResponse(
-                view.token(),
-                view.id(),
-                view.email(),
-                view.role(),
-                view.firstName(),
-                view.lastName()
-        );
-    }
-
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthView view = authService.login(new LoginCommand(request.email(), request.password()));
@@ -48,5 +37,16 @@ public class AuthController {
         ));
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(toResponse(view));
+    }
+
+    private static AuthResponse toResponse(AuthView view) {
+        return new AuthResponse(
+                view.token(),
+                view.id(),
+                view.email(),
+                view.role(),
+                view.firstName(),
+                view.lastName()
+        );
     }
 }

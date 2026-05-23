@@ -27,6 +27,7 @@ class AuthServiceTest {
 
     @Test
     void registerCreatesUserWithEncodedPassword() {
+        // given
         UserJpaRepository userRepository = mock(UserJpaRepository.class);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
@@ -45,8 +46,10 @@ class AuthServiceTest {
             return saved;
         });
 
+        // when
         authService.register(command);
 
+        // then
         User captured = captor.getValue();
         assertEquals(command.email(), captured.getEmail());
         assertEquals(UserRole.PASSENGER, captured.getRole());
@@ -55,6 +58,7 @@ class AuthServiceTest {
 
     @Test
     void loginAuthenticatesAndReturnsUser() {
+        // given
         UserJpaRepository userRepository = mock(UserJpaRepository.class);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
@@ -76,6 +80,10 @@ class AuthServiceTest {
         when(userRepository.findByEmail(command.email())).thenReturn(Optional.of(user));
         when(jwtService.generateToken(user)).thenReturn("token");
 
-        assertEquals(command.email(), authService.login(command).email());
+        // when
+        var result = authService.login(command);
+
+        // then
+        assertEquals(command.email(), result.email());
     }
 }
