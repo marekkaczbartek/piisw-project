@@ -15,12 +15,13 @@ import org.example.eticket.data.repositories.purchase.PurchaseCommandRepository;
 import org.example.eticket.data.repositories.purchase.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.ticket.TicketQueryRepository;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static org.example.eticket.api.pagination.PaginationUtils.paginateAndMap;
+import static org.example.eticket.application.service.validation.PurchaseValidator.isValidAt;
 
 // TODO refactor
 
@@ -77,18 +78,13 @@ public class PurchaseService {
 
     public Page<ValidPurchaseView> getValidTickets(GetValidPurchasesQuery query, String passengerEmail) {
         User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
-        List<ValidPurchaseView> filtered = purchaseQueryRepository
+
+        List<Purchase> validPurchases = purchaseQueryRepository
                 .findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId()).stream()
                 .filter(purchase -> isValidAt(purchase, query.checkedAt()))
-                .map(PurchaseService::toValidTicketView)
                 .toList();
-        Pageable pageable = query.pageable();
-        int start = Math.toIntExact(pageable.getOffset());
-        if (start >= filtered.size()) {
-            return new PageImpl<>(List.of(), pageable, filtered.size());
-        }
-        int end = Math.min(start + pageable.getPageSize(), filtered.size());
-        return new PageImpl<>(filtered.subList(start, end), pageable, filtered.size());
+
+        return paginateAndMap(validPurchases, query.pageable(), this::toValidTicketView);
     }
 
     public Page<PurchaseHistoryView> getPurchaseHistory(GetPurchaseHistoryQuery query, String passengerEmail) {
@@ -103,7 +99,7 @@ public class PurchaseService {
         }
         Integer durationMinutes = ticket.getDurationMinutes();
         if (durationMinutes == null) {
-            return null;
+            throw new FieldRequiredException("durationMinutes");
         }
         return boughtAt.plusMinutes(durationMinutes);
     }
@@ -122,7 +118,7 @@ public class PurchaseService {
         return punchedAt.plusMinutes(durationMinutes);
     }
 
-    private static ValidPurchaseView toValidTicketView(Purchase purchase) {
+    private ValidPurchaseView toValidTicketView(Purchase purchase) {
         Ticket ticket = purchase.getTicket();
         return new ValidPurchaseView(
                 purchase.getId(),
@@ -133,7 +129,7 @@ public class PurchaseService {
                 purchase.getBoughtAt(),
                 purchase.getPunchedAt(),
                 purchase.getPunchedIn(),
-                resolveExpiry(purchase)
+                purchase.getExpiresAt()
         );
     }
 
@@ -150,79 +146,6 @@ public class PurchaseService {
                 purchase.getPunchedIn(),
                 purchase.getExpiresAt()
         );
-    }
-
-    private static boolean isValidAt(Purchase purchase, LocalDateTime checkedAt) {
-        Ticket ticket = purchase.getTicket();
-        if (ticket == null || ticket.getTicketType() == null) {
-            return false;
-        }
-
-        return switch (ticket.getTicketType()) {
-            case PERIOD -> isPeriodValid(purchase, checkedAt);
-            case SINGLE_USE -> isSingleUseValid(purchase);
-            case TIME_BASED -> isTimeBasedValid(purchase, checkedAt);
-        };
-    }
-
-    private static boolean isPeriodValid(Purchase purchase, LocalDateTime checkedAt) {
-        LocalDateTime boughtAt = purchase.getBoughtAt();
-        LocalDateTime expiresAt = resolvePeriodExpiry(purchase);
-        if (checkedAt == null || boughtAt == null || expiresAt == null) {
-            return false;
-        }
-        return !checkedAt.isBefore(boughtAt) && !checkedAt.isAfter(expiresAt);
-    }
-
-    private static LocalDateTime resolvePeriodExpiry(Purchase purchase) {
-        if (purchase.getExpiresAt() != null) {
-            return purchase.getExpiresAt();
-        }
-        if (purchase.getTicket() == null || purchase.getTicket().getDurationMinutes() == null) {
-            return null;
-        }
-        if (purchase.getBoughtAt() == null) {
-            return null;
-        }
-        return purchase.getBoughtAt().plusMinutes(purchase.getTicket().getDurationMinutes());
-    }
-
-    private static boolean isSingleUseValid(Purchase purchase) {
-        return purchase.getPunchedAt() != null && purchase.getPunchedIn() != null;
-    }
-
-    private static boolean isTimeBasedValid(Purchase purchase, LocalDateTime checkedAt) {
-        LocalDateTime punchedAt = purchase.getPunchedAt();
-        LocalDateTime expiresAt = resolveTimeBasedExpiry(purchase);
-        if (checkedAt == null || punchedAt == null || expiresAt == null) {
-            return false;
-        }
-        return !checkedAt.isBefore(punchedAt) && !checkedAt.isAfter(expiresAt);
-    }
-
-    private static LocalDateTime resolveTimeBasedExpiry(Purchase purchase) {
-        if (purchase.getExpiresAt() != null) {
-            return purchase.getExpiresAt();
-        }
-        if (purchase.getTicket() == null || purchase.getTicket().getDurationMinutes() == null) {
-            return null;
-        }
-        if (purchase.getPunchedAt() == null) {
-            return null;
-        }
-        return purchase.getPunchedAt().plusMinutes(purchase.getTicket().getDurationMinutes());
-    }
-
-    private static LocalDateTime resolveExpiry(Purchase purchase) {
-        TicketType ticketType = purchase.getTicket() != null ? purchase.getTicket().getTicketType() : null;
-        if (ticketType == null) {
-            return purchase.getExpiresAt();
-        }
-        return switch (ticketType) {
-            case PERIOD -> resolvePeriodExpiry(purchase);
-            case TIME_BASED -> resolveTimeBasedExpiry(purchase);
-            case SINGLE_USE -> purchase.getExpiresAt();
-        };
     }
 
     private static PurchaseView toView(Purchase purchase) {

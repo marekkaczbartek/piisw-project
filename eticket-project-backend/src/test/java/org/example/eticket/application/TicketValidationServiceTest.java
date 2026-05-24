@@ -47,7 +47,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.isTicketValid(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.getEmail());
 
         // then
         assertTrue(result.valid());
@@ -84,7 +84,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.isTicketValid(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.getEmail());
 
         // then
         assertFalse(result.valid());
@@ -112,7 +112,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.isTicketValid(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.getEmail());
 
         // then
         assertTrue(result.valid());
@@ -140,7 +140,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.isTicketValid(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.getEmail());
 
         // then
         assertFalse(result.valid());
@@ -170,7 +170,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.isTicketValid(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.getEmail());
 
         // then
         assertTrue(result.valid());
@@ -200,7 +200,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.isTicketValid(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.getEmail());
 
         // then
         assertFalse(result.valid());
@@ -218,7 +218,7 @@ class TicketValidationServiceTest {
         ValidateTicketCommand command = new ValidateTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10");
 
         // when
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.isTicketValid(
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.validatePurchase(
                 command,
                 inspector.getEmail()
         ));

@@ -30,7 +30,7 @@ public class ValidationController {
             @Valid @RequestBody TicketValidationRequest request,
             Authentication authentication
     ) {
-        ValidationResultView view = ticketValidationService.isTicketValid(new ValidateTicketCommand(
+        ValidationResultView view = ticketValidationService.validatePurchase(new ValidateTicketCommand(
                 request.purchaseId(),
                 LocalDateTime.now(),
                 request.checkedIn()), authentication.getName());
