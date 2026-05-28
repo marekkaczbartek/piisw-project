@@ -1,0 +1,45 @@
+.inspector-form {
+  max-width: 520px;
+}
+
+.code-field {
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 8px;
+    border-bottom: 1px solid var(--ink);
+    transition: border-color 0.15s;
+
+    &:focus-within {
+      border-bottom-color: var(--red);
+    }
+
+    input {
+      border-bottom: none !important;
+    }
+  }
+
+  &__qr {
+    appearance: none;
+    background: transparent;
+    border: none;
+    color: var(--ink-3);
+    padding: 6px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+
+    &:hover { color: var(--ink); }
+    &.active { color: var(--red); }
+  }
+}
+
+app-qr-scanner {
+  display: block;
+  max-width: 320px;
+  margin: 0 0 22px;
+}

@@ -1,0 +1,67 @@
+<app-auth-shell activeMode="register">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field-row">
+      <div class="field">
+        <label for="firstName">Imię</label>
+        <input
+          id="firstName"
+          type="text"
+          formControlName="firstName"
+          autocomplete="given-name"
+          placeholder="Anna"
+        />
+      </div>
+      <div class="field">
+        <label for="lastName">Nazwisko</label>
+        <input
+          id="lastName"
+          type="text"
+          formControlName="lastName"
+          autocomplete="family-name"
+          placeholder="Kowalska"
+        />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="email">Adres e-mail</label>
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        autocomplete="email"
+        placeholder="anna@example.pl"
+      />
+    </div>
+
+    <div class="field">
+      <label for="password">Hasło</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+        placeholder="••••••••"
+      />
+    </div>
+
+    @if (error()) {
+      <div class="form-error">{{ error() }}</div>
+    }
+
+    <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
+      <button
+        type="submit"
+        class="btn red lg"
+        [disabled]="form.invalid || submitting()"
+      >
+        @if (submitting()) {
+          Tworzenie konta…
+        } @else {
+          Załóż konto
+          <span class="arr">→</span>
+        }
+      </button>
+    </div>
+  </form>
+</app-auth-shell>

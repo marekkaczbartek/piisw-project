@@ -1,0 +1,63 @@
+<div class="page-head">
+  <div>
+    <div class="page-kicker">· Tryb służbowy</div>
+    <h1>Kontrola <em>biletów.</em></h1>
+  </div>
+</div>
+
+<section class="inspector-form">
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="field">
+      <label for="vehicle">Pojazd · numer boczny</label>
+      <input id="vehicle" type="text" formControlName="vehicle" placeholder="np. T-04" />
+    </div>
+
+    <div class="field code-field">
+      <label for="code">Kod biletu</label>
+      <div class="code-field__row">
+        <input
+          id="code"
+          type="text"
+          formControlName="code"
+          class="mono"
+          autocomplete="off"
+          placeholder="550e8400-e29b-41d4-a716-446655440000"
+        />
+        <button
+          type="button"
+          class="code-field__qr"
+          [class.active]="scanning()"
+          (click)="toggleScanner()"
+          [attr.aria-pressed]="scanning()"
+          [attr.aria-label]="scanning() ? 'Zamknij skaner QR' : 'Skanuj kod QR'"
+          title="Skanuj kod QR"
+        >
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true">
+            <path d="M2 2h7v7H2V2zm2 2v3h3V4H4zm9-2h7v7h-7V2zm2 2v3h3V4h-3zM2 13h7v7H2v-7zm2 2v3h3v-3H4zm9-2h2v2h-2v-2zm4 0h3v2h-3v-2zm-4 4h2v3h-2v-3zm4 0h2v2h-2v-2zm2 2h2v2h-2v-2z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    @if (scanning()) {
+      <app-qr-scanner (decoded)="onScanned($event)" />
+    }
+
+    @if (inputError()) {
+      <div class="form-error" style="margin-bottom: 14px;">{{ inputError() }}</div>
+    }
+
+    <button type="submit" class="btn red lg" [disabled]="form.invalid || busy()">
+      @if (busy()) {
+        Sprawdzanie…
+      } @else {
+        Sprawdź ważność
+        <span class="arr">→</span>
+      }
+    </button>
+  </form>
+</section>
+
+@if (result(); as r) {
+  <app-result-modal [result]="r" (close)="closeResult()" />
+}

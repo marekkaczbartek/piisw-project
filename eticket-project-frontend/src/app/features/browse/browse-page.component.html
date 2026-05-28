@@ -1,0 +1,59 @@
+<div class="page-head">
+  <div>
+    <div class="page-kicker">· Wybierz bilet</div>
+    <h1>Oferta <em>biletów.</em></h1>
+  </div>
+</div>
+
+@if (ticketsRes.isLoading()) {
+  <div class="muted small">Ładowanie oferty…</div>
+}
+
+@if (ticketsRes.error()) {
+  <div class="form-error">Nie udało się załadować biletów. Odśwież stronę, aby spróbować ponownie.</div>
+}
+
+<div class="cat-grid">
+  @for (col of columns(); track col.type) {
+    <div>
+      <h2 class="cat-title">{{ col.title }}</h2>
+      <div class="cat-desc">{{ col.subtitle }}</div>
+
+      @for (v of col.variants; track v.durationMinutes) {
+        <div class="option">
+          <div class="option-label">
+            {{ variantLabel(col.type, v) }}
+            @if (variantDescription(col.type, v); as desc) {
+              <span class="dim" style="margin-left: 6px; font-size: 13px;">· {{ desc }}</span>
+            }
+          </div>
+          <div class="option-buttons">
+            @if (v.prices['NORMAL']; as price) {
+              <button type="button" class="opt-btn" (click)="openCheckout(col.type, v, 'NORMAL')">
+                <div class="kind">Normalny</div>
+                <div class="price">{{ price | currency:'PLN':'symbol':'1.2-2' }}</div>
+              </button>
+            }
+            @if (v.prices['REDUCED']; as price) {
+              <button type="button" class="opt-btn reduced" (click)="openCheckout(col.type, v, 'REDUCED')">
+                <div class="kind">Ulgowy</div>
+                <div class="price">{{ price | currency:'PLN':'symbol':'1.2-2' }}</div>
+              </button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="muted small" style="padding: 16px 0;">Brak ofert w tej kategorii.</div>
+      }
+    </div>
+  }
+</div>
+
+@if (selection(); as sel) {
+  <app-checkout-modal
+    [selection]="sel"
+    [user]="auth.user()!"
+    (close)="closeCheckout()"
+    (purchased)="onPurchased($event, sel)"
+  />
+}
