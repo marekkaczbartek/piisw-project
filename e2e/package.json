@@ -1,0 +1,20 @@
+{
+  "name": "eticket-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "report": "playwright show-report",
+    "backend:up": "docker compose -f ../docker-compose.yml up -d --build postgres backend",
+    "backend:down": "docker compose -f ../docker-compose.yml down -v",
+    "backend:wait": "node ./scripts/wait-for-stack.mjs",
+    "e2e": "npm run backend:up && npm run backend:wait && npm test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/node": "^22.10.0",
+    "typescript": "~5.9.2"
+  }
+}
