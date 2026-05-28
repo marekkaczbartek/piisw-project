@@ -5,7 +5,6 @@ import {
   input,
   output,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
 
 export interface ValidationResult {
   valid: boolean | null;
@@ -16,7 +15,6 @@ export interface ValidationResult {
 
 @Component({
   selector: 'app-result-modal',
-  imports: [DatePipe],
   templateUrl: './result-modal.component.html',
   styleUrl: './result-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
