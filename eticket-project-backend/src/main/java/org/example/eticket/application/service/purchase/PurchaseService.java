@@ -5,6 +5,7 @@ import org.example.eticket.application.exception.FieldRequiredException;
 import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
 import org.example.eticket.application.exception.TicketAlreadyPunchedException;
+import org.example.eticket.application.mapper.purchase.PurchaseMapper;
 import org.example.eticket.application.model.purchase.*;
 import org.example.eticket.application.service.auth.UserResolver;
 import org.example.eticket.data.entities.Purchase;
@@ -33,6 +34,7 @@ public class PurchaseService {
     private final PurchaseCommandRepository purchaseCommandRepository;
     private final PurchaseQueryRepository purchaseQueryRepository;
     private final UserResolver userResolver;
+    private final PurchaseMapper purchaseMapper;
 
     public PurchaseView makePurchase(MakePurchaseCommand command, String passengerEmail) {
         User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
@@ -52,7 +54,7 @@ public class PurchaseService {
                 .build();
 
         Purchase saved = purchaseCommandRepository.save(purchase);
-        return toView(saved);
+        return purchaseMapper.toPurchaseView(saved);
     }
 
     public PunchTicketView punchTicket(PunchTicketCommand command) {
@@ -73,7 +75,7 @@ public class PurchaseService {
         purchase.setExpiresAt(expiresAt);
 
         Purchase saved = purchaseCommandRepository.save(purchase);
-        return toPunchView(saved);
+        return purchaseMapper.toPunchTicketView(saved);
     }
 
     public Page<ValidPurchaseView> getValidTickets(GetValidPurchasesQuery query, String passengerEmail) {
@@ -84,13 +86,13 @@ public class PurchaseService {
                 .filter(purchase -> isValidAt(purchase, query.checkedAt()))
                 .toList();
 
-        return paginateAndMap(validPurchases, query.pageable(), this::toValidTicketView);
+        return paginateAndMap(validPurchases, query.pageable(), purchaseMapper::toValidPurchaseView);
     }
 
     public Page<PurchaseHistoryView> getPurchaseHistory(GetPurchaseHistoryQuery query, String passengerEmail) {
         User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
         return purchaseQueryRepository.findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId(), query.pageable())
-                .map(PurchaseService::toHistoryView);
+                .map(purchaseMapper::toPurchaseHistoryView);
     }
 
     private static LocalDateTime resolveExpiry(Ticket ticket, LocalDateTime boughtAt) {
@@ -116,63 +118,5 @@ public class PurchaseService {
             throw new FieldRequiredException("durationMinutes");
         }
         return punchedAt.plusMinutes(durationMinutes);
-    }
-
-    private ValidPurchaseView toValidTicketView(Purchase purchase) {
-        Ticket ticket = purchase.getTicket();
-        return new ValidPurchaseView(
-                purchase.getId(),
-                ticket.getTicketType(),
-                ticket.getDiscountType(),
-                ticket.getPrice(),
-                ticket.getDurationMinutes(),
-                purchase.getBoughtAt(),
-                purchase.getPunchedAt(),
-                purchase.getPunchedIn(),
-                purchase.getExpiresAt()
-        );
-    }
-
-    private static PurchaseHistoryView toHistoryView(Purchase purchase) {
-        Ticket ticket = purchase.getTicket();
-        return new PurchaseHistoryView(
-                purchase.getId(),
-                ticket.getTicketType(),
-                ticket.getDiscountType(),
-                ticket.getPrice(),
-                ticket.getDurationMinutes(),
-                purchase.getBoughtAt(),
-                purchase.getPunchedAt(),
-                purchase.getPunchedIn(),
-                purchase.getExpiresAt()
-        );
-    }
-
-    private static PurchaseView toView(Purchase purchase) {
-        Ticket ticket = purchase.getTicket();
-        return new PurchaseView(
-                purchase.getId(),
-                ticket.getTicketType(),
-                ticket.getDiscountType(),
-                ticket.getPrice(),
-                ticket.getDurationMinutes(),
-                purchase.getBoughtAt(),
-                purchase.getExpiresAt()
-        );
-    }
-
-    private static PunchTicketView toPunchView(Purchase purchase) {
-        Ticket ticket = purchase.getTicket();
-        return new PunchTicketView(
-                purchase.getId(),
-                ticket.getTicketType(),
-                ticket.getDiscountType(),
-                ticket.getPrice(),
-                ticket.getDurationMinutes(),
-                purchase.getBoughtAt(),
-                purchase.getPunchedAt(),
-                purchase.getPunchedIn(),
-                purchase.getExpiresAt()
-        );
     }
 }

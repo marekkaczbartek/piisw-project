@@ -1,5 +1,6 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.mapper.ticket.TicketMapper;
 import org.example.eticket.application.model.ticket.TicketView;
 import org.example.eticket.application.service.ticket.TicketService;
 import org.example.eticket.data.entities.Ticket;
@@ -7,6 +8,7 @@ import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.repositories.ticket.TicketQueryRepository;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -21,7 +23,8 @@ class TicketServiceTest {
     void returnsEmptyListWhenNoTicketsExist() {
         // given
         TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of());
-        TicketService ticketService = new TicketService(ticketReadRepository);
+        TicketMapper ticketMapper = Mappers.getMapper(TicketMapper.class);
+        TicketService ticketService = new TicketService(ticketReadRepository, ticketMapper);
 
         // when
         List<TicketView> result = ticketService.getAllTickets();
@@ -46,7 +49,8 @@ class TicketServiceTest {
                 .durationMinutes(30)
                 .build();
         TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(singleUse, timeBased));
-        TicketService ticketService = new TicketService(ticketReadRepository);
+        TicketMapper ticketMapper = Mappers.getMapper(TicketMapper.class);
+        TicketService ticketService = new TicketService(ticketReadRepository, ticketMapper);
 
         // when
         List<TicketView> result = ticketService.getAllTickets();
@@ -74,7 +78,8 @@ class TicketServiceTest {
                 .durationMinutes(30)
                 .build();
         TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(first, second));
-        TicketService ticketService = new TicketService(ticketReadRepository);
+        TicketMapper ticketMapper = Mappers.getMapper(TicketMapper.class);
+        TicketService ticketService = new TicketService(ticketReadRepository, ticketMapper);
 
         // when
         List<TicketView> result = ticketService.getAllTickets();

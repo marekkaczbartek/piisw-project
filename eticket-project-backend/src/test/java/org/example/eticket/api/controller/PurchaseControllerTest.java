@@ -1,6 +1,8 @@
 package org.example.eticket.api.controller;
 
 import org.example.eticket.api.controller.purchase.PurchaseController;
+import org.example.eticket.api.dto.purchase.PunchTicketResponse;
+import org.example.eticket.api.mapper.purchase.PurchaseResponseMapper;
 import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
 import org.example.eticket.application.model.purchase.PunchTicketCommand;
 import org.example.eticket.application.model.purchase.PunchTicketView;
@@ -50,6 +52,9 @@ class PurchaseControllerTest {
     @MockitoBean
     private UserDetailsService userDetailsService;
 
+    @MockitoBean
+    private PurchaseResponseMapper purchaseResponseMapper;
+
     @Test
     void punchTicketIsAccessibleWithoutAuthentication() throws Exception {
         // given
@@ -69,6 +74,17 @@ class PurchaseControllerTest {
                 expiresAt
         );
         when(purchaseService.punchTicket(any(PunchTicketCommand.class))).thenReturn(view);
+        when(purchaseResponseMapper.toPunchTicketResponse(view)).thenReturn(new PunchTicketResponse(
+                purchaseId,
+                TicketType.TIME_BASED,
+                DiscountType.NORMAL,
+                BigDecimal.valueOf(4.20),
+                60,
+                boughtAt,
+                punchedAt,
+                "BUS-10",
+                expiresAt
+        ));
 
         // when
         var response = mockMvc.perform(patch("/purchases/{purchaseId}/punch", purchaseId)
