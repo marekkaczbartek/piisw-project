@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { AuthStore } from './auth/auth.store';
-import { landingUrlFor } from './auth/landing';
+import { AuthStore } from './core/auth/auth.store';
+import { homeRouteFor } from './core/home-route';
 import { ToastComponent } from './shared/toast.component';
 
 @Component({
@@ -15,7 +15,7 @@ export class App {
   protected readonly store = inject(AuthStore);
   private readonly router = inject(Router);
 
-  protected readonly landingUrl = computed(() => landingUrlFor(this.store.user()?.role));
+  protected readonly homeRoute = computed(() => homeRouteFor(this.store.user()?.role));
 
   logout(): void {
     this.store.clear();

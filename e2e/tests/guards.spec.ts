@@ -10,10 +10,10 @@ test.describe('route guards', () => {
     expect(new URL(page.url()).searchParams.get('returnUrl')).toBe('/browse');
   });
 
-  test('unauthenticated /mine redirects to /login', async ({ page }) => {
-    await page.goto('/mine');
+  test('unauthenticated /my-tickets redirects to /login', async ({ page }) => {
+    await page.goto('/my-tickets');
     await page.waitForURL(/\/login/);
-    expect(new URL(page.url()).searchParams.get('returnUrl')).toBe('/mine');
+    expect(new URL(page.url()).searchParams.get('returnUrl')).toBe('/my-tickets');
   });
 
   test('unauthenticated /inspector redirects to /login', async ({ page }) => {

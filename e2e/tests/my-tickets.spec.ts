@@ -14,7 +14,7 @@ test.describe('my tickets', () => {
     await ctx.dispose();
     await injectAuth(page, auth);
 
-    await page.goto('/mine');
+    await page.goto('/my-tickets');
     await expect(page.locator('.empty')).toBeVisible();
     await expect(page.locator('.empty')).toContainText(/kieszeń/);
     await expect(page.locator('.ticket-card')).toHaveCount(0);
@@ -41,7 +41,7 @@ test.describe('my tickets', () => {
     await ctx.dispose();
     await injectAuth(page, auth);
 
-    await page.goto('/mine');
+    await page.goto('/my-tickets');
     await expect(page.locator('.ticket-card')).toHaveCount(2);
     // QR codes render as <canvas> or <svg> inside app-qr-code; just assert the component is present.
     await expect(page.locator('app-qr-code')).toHaveCount(2);
@@ -65,7 +65,7 @@ test.describe('my tickets', () => {
     await ctx.dispose();
     await injectAuth(page, auth);
 
-    await page.goto('/mine');
+    await page.goto('/my-tickets');
     await expect(page.locator('.pager')).toBeVisible();
     await expect(page.locator('.pager__indicator')).toContainText(/Strona 1 z 2/);
 

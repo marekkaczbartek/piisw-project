@@ -2,7 +2,7 @@
   <div class="app-shell">
     <header class="topbar">
       <div style="display: flex; align-items: center; gap: 4px;">
-        <a class="brand" [routerLink]="landingUrl()">
+        <a class="brand" [routerLink]="homeRoute()">
           <span>eBilet</span>
           <span class="dot"></span>
         </a>
@@ -10,7 +10,7 @@
         @if (store.user()?.role === 'PASSENGER') {
           <nav class="topnav">
             <a routerLink="/browse" routerLinkActive="active">Oferta</a>
-            <a routerLink="/mine" routerLinkActive="active">Moje bilety</a>
+            <a routerLink="/my-tickets" routerLinkActive="active">Moje bilety</a>
           </nav>
         }
         @if (store.user()?.role === 'INSPECTOR') {
