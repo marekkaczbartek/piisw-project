@@ -42,9 +42,9 @@ public class Purchase {
     private String punchedIn;
 
     /**
-     * TIME_BASED: set at punch time → punchedAt + ticket.durationMinutes
-     * PERIOD: set at purchase time → boughtAt + ticket.durationMinutes
-     * SINGLE_USE: null
+     * TIME_BASED: set at punch time -> punchedAt + ticket.durationMinutes
+     * PERIOD: set at purchase time -> boughtAt + ticket.durationMinutes
+     * SINGLE_USE: set at inspection time to mark as used
      */
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;

@@ -8,6 +8,8 @@ import org.example.eticket.application.service.auth.UserResolver;
 import org.example.eticket.data.entities.Purchase;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.entities.Validation;
+import org.example.eticket.data.enums.TicketType;
+import org.example.eticket.data.repositories.purchase.PurchaseCommandRepository;
 import org.example.eticket.data.repositories.purchase.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.validation.ValidationCommandRepository;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import static org.example.eticket.application.service.validation.PurchaseValidat
 public class ValidationService {
 
     private final PurchaseQueryRepository purchaseQueryRepository;
+    private final PurchaseCommandRepository purchaseCommandRepository;
     private final ValidationCommandRepository validationCommandRepository;
     private final UserResolver userResolver;
 
@@ -33,6 +36,11 @@ public class ValidationService {
                 command.checkedAt(),
                 command.checkedIn()
         );
+
+        if (result && purchase.getTicket() != null && purchase.getTicket().getTicketType() == TicketType.SINGLE_USE) {
+            purchase.setExpiresAt(command.checkedAt());
+            purchaseCommandRepository.save(purchase);
+        }
 
         Validation validation = Validation.builder()
                 .inspector(inspector)

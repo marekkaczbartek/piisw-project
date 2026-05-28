@@ -38,6 +38,9 @@ public class PurchaseValidator {
     }
 
     private static boolean isSingleUseValid(Purchase purchase, String checkedIn) {
+        if (purchase.getExpiresAt() != null) {
+            return false;
+        }
         if (purchase.getPunchedAt() == null || purchase.getPunchedIn() == null) {
             return false;
         }
@@ -53,4 +56,3 @@ public class PurchaseValidator {
         return !checkedAt.isBefore(punchedAt) && !checkedAt.isAfter(expiresAt);
     }
 }
-
