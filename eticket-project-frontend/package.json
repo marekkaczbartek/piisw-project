@@ -11,7 +11,15 @@
     "lint": "eslint \"src/**/*.{ts,html}\"",
     "lint:fix": "eslint \"src/**/*.{ts,html}\" --fix",
     "format": "prettier --write \"src/**/*.{ts,html,scss,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\""
+    "format:check": "prettier --check \"src/**/*.{ts,html,scss,json}\"",
+    "prepare": "cd .. && husky eticket-project-frontend/.husky"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,html}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.{scss,json}": "prettier --write"
   },
   "prettier": {
     "printWidth": 100,
@@ -52,12 +60,14 @@
     "angular-eslint": "^20.7.0",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^9.1.2",
+    "husky": "^9.1.7",
     "jasmine-core": "~5.9.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "lint-staged": "^17.0.5",
     "prettier": "^3.8.3",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.59.4"
