@@ -1,0 +1,53 @@
+<div class="modal-back" (click)="close.emit()">
+  <div class="modal modal-wide" (click)="$event.stopPropagation()">
+    <div class="result-banner" [class.ok]="result().valid === true" [class.bad]="result().valid !== true">
+      <div>
+        <div class="result-banner__kicker">
+          @if (result().error) {
+            · Błąd weryfikacji
+          } @else if (result().valid) {
+            · Przepuść pasażera
+          } @else {
+            · Wstrzymaj — wymagana interwencja
+          }
+        </div>
+        <div class="result-banner__title">
+          @if (result().valid) {
+            Bilet <em>ważny.</em>
+          } @else {
+            Bilet <em>nieważny.</em>
+          }
+        </div>
+      </div>
+      <div class="result-banner__mark">{{ result().valid ? '✓' : '✕' }}</div>
+    </div>
+
+    <div class="m-body">
+      <table class="kv-table">
+        <tbody>
+          <tr>
+            <td class="k">Kod biletu</td>
+            <td class="v mono">{{ result().code }}</td>
+          </tr>
+          <tr>
+            <td class="k">Pojazd kontroli</td>
+            <td class="v mono">{{ result().vehicle }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      @if (result().error) {
+        <div class="form-error" style="margin-bottom: 16px;">
+          Nie udało się zweryfikować biletu. Sprawdź kod i spróbuj ponownie.
+        </div>
+      }
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px;">
+        <button type="button" class="btn ghost" (click)="close.emit()">Zamknij</button>
+        <button type="button" class="btn red lg" (click)="close.emit()">
+          Kontynuuj kontrolę <span class="arr">→</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
