@@ -49,12 +49,8 @@
       <div class="form-error">{{ error() }}</div>
     }
 
-    <div style="display: flex; justify-content: flex-end; margin-top: 12px;">
-      <button
-        type="submit"
-        class="btn red lg"
-        [disabled]="form.invalid || submitting()"
-      >
+    <div style="display: flex; justify-content: flex-end; margin-top: 12px">
+      <button type="submit" class="btn red lg" [disabled]="submitting()">
         @if (submitting()) {
           Tworzenie konta…
         } @else {
