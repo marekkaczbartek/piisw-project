@@ -1,22 +1,19 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
-import org.example.eticket.application.service.TicketValidationService;
+import org.example.eticket.application.service.auth.UserResolver;
+import org.example.eticket.application.service.validation.ValidationService;
 import org.example.eticket.data.entities.Purchase;
 import org.example.eticket.data.entities.Ticket;
 import org.example.eticket.data.entities.User;
 import org.example.eticket.data.entities.Validation;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.enums.UserRole;
-import org.example.eticket.data.repositories.PurchaseQueryRepository;
-import org.example.eticket.data.repositories.UserQueryRepository;
-import org.example.eticket.data.repositories.ValidationCommandRepository;
-import org.junit.jupiter.api.AfterEach;
+import org.example.eticket.data.repositories.purchase.PurchaseQueryRepository;
+import org.example.eticket.data.repositories.user.UserQueryRepository;
+import org.example.eticket.data.repositories.validation.ValidationCommandRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,13 +22,9 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TicketValidationServiceTest {
 
-    @AfterEach
-    void clearSecurityContext() {
-        SecurityContextHolder.clearContext();
-    }
-
     @Test
     void periodTicketIsTicketValidWhenCheckedWithinValidity() {
+        // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime expiresAt = boughtAt.plusDays(1);
@@ -42,20 +35,22 @@ class TicketValidationServiceTest {
         Purchase purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
         User inspector = inspector("inspector@example.com");
         InMemoryValidationCommandRepository validationRepository = new InMemoryValidationCommandRepository();
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
-                new InMemoryUserQueryRepository(inspector),
-                validationRepository
+                validationRepository,
+                new UserResolver(new InMemoryUserQueryRepository(inspector))
         );
-        setInspector(inspector.getEmail());
-
         ValidateTicketCommand command = new ValidateTicketCommand(
                 purchaseId,
                 boughtAt.plusHours(3),
                 "BUS-10"
         );
 
-        assertTrue(service.isTicketValid(command).valid());
+        // when
+        var result = service.validatePurchase(command, inspector.getEmail());
+
+        // then
+        assertTrue(result.valid());
         Validation saved = validationRepository.singleSaved();
         assertNotNull(saved);
         assertEquals(inspector.getEmail(), saved.getInspector().getEmail());
@@ -67,6 +62,7 @@ class TicketValidationServiceTest {
 
     @Test
     void periodTicketIsInvalidWhenCheckedAfterExpiry() {
+        // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime expiresAt = boughtAt.plusDays(1);
@@ -76,24 +72,27 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
-                new InMemoryUserQueryRepository(inspector),
-                new InMemoryValidationCommandRepository()
+                new InMemoryValidationCommandRepository(),
+                new UserResolver(new InMemoryUserQueryRepository(inspector))
         );
-        setInspector(inspector.getEmail());
-
         ValidateTicketCommand command = new ValidateTicketCommand(
                 purchaseId,
                 expiresAt.plusMinutes(1),
                 "BUS-10"
         );
 
-        assertFalse(service.isTicketValid(command).valid());
+        // when
+        var result = service.validatePurchase(command, inspector.getEmail());
+
+        // then
+        assertFalse(result.valid());
     }
 
     @Test
     void singleUseTicketIsTicketValidWhenPunchedInCheckedVehicle() {
+        // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         Ticket ticket = Ticket.builder()
@@ -101,24 +100,27 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
-                new InMemoryUserQueryRepository(inspector),
-                new InMemoryValidationCommandRepository()
+                new InMemoryValidationCommandRepository(),
+                new UserResolver(new InMemoryUserQueryRepository(inspector))
         );
-        setInspector(inspector.getEmail());
-
         ValidateTicketCommand command = new ValidateTicketCommand(
                 purchaseId,
                 punchedAt.plusMinutes(5),
                 "BUS-10"
         );
 
-        assertTrue(service.isTicketValid(command).valid());
+        // when
+        var result = service.validatePurchase(command, inspector.getEmail());
+
+        // then
+        assertTrue(result.valid());
     }
 
     @Test
     void singleUseTicketIsInvalidWhenCheckedInDifferentVehicle() {
+        // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         Ticket ticket = Ticket.builder()
@@ -126,24 +128,27 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
-                new InMemoryUserQueryRepository(inspector),
-                new InMemoryValidationCommandRepository()
+                new InMemoryValidationCommandRepository(),
+                new UserResolver(new InMemoryUserQueryRepository(inspector))
         );
-        setInspector(inspector.getEmail());
-
         ValidateTicketCommand command = new ValidateTicketCommand(
                 purchaseId,
                 punchedAt.plusMinutes(5),
                 "BUS-11"
         );
 
-        assertFalse(service.isTicketValid(command).valid());
+        // when
+        var result = service.validatePurchase(command, inspector.getEmail());
+
+        // then
+        assertFalse(result.valid());
     }
 
     @Test
     void timeBasedTicketIsTicketValidWhenNotExpired() {
+        // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         LocalDateTime expiresAt = punchedAt.plusMinutes(30);
@@ -153,24 +158,27 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
-                new InMemoryUserQueryRepository(inspector),
-                new InMemoryValidationCommandRepository()
+                new InMemoryValidationCommandRepository(),
+                new UserResolver(new InMemoryUserQueryRepository(inspector))
         );
-        setInspector(inspector.getEmail());
-
         ValidateTicketCommand command = new ValidateTicketCommand(
                 purchaseId,
                 punchedAt.plusMinutes(20),
                 "BUS-10"
         );
 
-        assertTrue(service.isTicketValid(command).valid());
+        // when
+        var result = service.validatePurchase(command, inspector.getEmail());
+
+        // then
+        assertTrue(result.valid());
     }
 
     @Test
     void timeBasedTicketIsInvalidAfterExpiry() {
+        // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         LocalDateTime expiresAt = punchedAt.plusMinutes(30);
@@ -180,63 +188,43 @@ class TicketValidationServiceTest {
                 .build();
         Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchase),
-                new InMemoryUserQueryRepository(inspector),
-                new InMemoryValidationCommandRepository()
+                new InMemoryValidationCommandRepository(),
+                new UserResolver(new InMemoryUserQueryRepository(inspector))
         );
-        setInspector(inspector.getEmail());
-
         ValidateTicketCommand command = new ValidateTicketCommand(
                 purchaseId,
                 expiresAt.plusMinutes(1),
                 "BUS-10"
         );
 
-        assertFalse(service.isTicketValid(command).valid());
+        // when
+        var result = service.validatePurchase(command, inspector.getEmail());
+
+        // then
+        assertFalse(result.valid());
     }
 
     @Test
     void throwsWhenPurchaseDoesNotExist() {
+        // given
         User inspector = inspector("inspector@example.com");
-        TicketValidationService service = new TicketValidationService(
+        ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(),
-                new InMemoryUserQueryRepository(inspector),
-                new InMemoryValidationCommandRepository()
+                new InMemoryValidationCommandRepository(),
+                new UserResolver(new InMemoryUserQueryRepository(inspector))
         );
-        setInspector(inspector.getEmail());
+        ValidateTicketCommand command = new ValidateTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10");
 
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.isTicketValid(
-                new ValidateTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10")
+        // when
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.validatePurchase(
+                command,
+                inspector.getEmail()
         ));
 
-        assertEquals(HttpStatus.NOT_FOUND, ex.getStatusCode());
-    }
-
-    @Test
-    void throwsWhenUserIsNotInspector() {
-        UUID purchaseId = UUID.randomUUID();
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, null, LocalDateTime.now(), "BUS-10", null);
-        User passenger = User.builder()
-                .id(UUID.randomUUID())
-                .email("passenger@example.com")
-                .role(UserRole.PASSENGER)
-                .build();
-        TicketValidationService service = new TicketValidationService(
-                new InMemoryPurchaseQueryRepository(purchase),
-                new InMemoryUserQueryRepository(passenger),
-                new InMemoryValidationCommandRepository()
-        );
-        setInspector(passenger.getEmail());
-
-        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> service.isTicketValid(
-                new ValidateTicketCommand(purchaseId, LocalDateTime.now(), "BUS-10")
-        ));
-
-        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+        // then
+        assertEquals("Purchase not found", ex.getMessage());
     }
 
     private static User inspector(String email) {
@@ -247,11 +235,6 @@ class TicketValidationServiceTest {
                 .build();
     }
 
-    private static void setInspector(String email) {
-        SecurityContextHolder.getContext().setAuthentication(
-                new UsernamePasswordAuthenticationToken(email, null, List.of())
-        );
-    }
 
     private static Purchase purchase(
             Ticket ticket,
@@ -315,6 +298,7 @@ class TicketValidationServiceTest {
         }
     }
 
+
     private record InMemoryUserQueryRepository(Map<String, User> users) implements UserQueryRepository {
 
         private InMemoryUserQueryRepository(User... users) {
@@ -349,7 +333,7 @@ class TicketValidationServiceTest {
             if (saved.isEmpty()) {
                 return null;
             }
-            return saved.get(0);
+            return saved.getFirst();
         }
     }
 }

@@ -1,15 +1,14 @@
 package org.example.eticket.api.dto.purchase;
 
+import jakarta.validation.constraints.NotNull;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
 
 import java.time.LocalDateTime;
 
 public record MakePurchaseRequest(
-        TicketType ticketType,
-        DiscountType discountType,
+        @NotNull TicketType ticketType,
+        @NotNull DiscountType discountType,
         Integer durationMinutes,
-        LocalDateTime boughtAt
-) {
+        @NotNull LocalDateTime boughtAt) {
 }
-
