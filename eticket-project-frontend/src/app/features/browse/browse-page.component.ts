@@ -52,7 +52,7 @@ export class BrowsePageComponent {
     const label = variantLabel(selection.type, selection.variant);
     this.toast.show(`Zakupiono — ${categoryLabel(p.ticketType)} · ${label}`);
     this.selection.set(null);
-    this.router.navigateByUrl('/mine');
+    this.router.navigateByUrl('/my-tickets');
   }
 
   protected variantLabel(type: TicketType, v: Variant): string {

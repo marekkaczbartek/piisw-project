@@ -10,7 +10,7 @@ import { TicketType } from '../browse/browse.types';
 import { QrCodeComponent } from '../../shared/qr-code.component';
 import { PurchaseHistoryItem, PurchaseStatus } from '../purchase/purchase.types';
 import { formatDuration, formatTimeUntil, purchaseStatus } from '../purchase/purchase.status';
-import { SpringPage } from './mine.types';
+import { SpringPage } from '../../core/spring-page';
 
 const PAGE_SIZE = 5;
 

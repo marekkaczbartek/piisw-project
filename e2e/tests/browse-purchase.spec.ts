@@ -19,8 +19,8 @@ test.describe('browse + purchase', () => {
     await expect(page.locator('.opt-btn')).not.toHaveCount(0);
   });
 
-  test('full purchase flow: open checkout → confirm → land on /mine with new ticket', async ({ page }) => {
-    // Fresh passenger so /mine starts empty.
+  test('full purchase flow: open checkout → confirm → land on /my-tickets with new ticket', async ({ page }) => {
+    // Fresh passenger so /my-tickets starts empty.
     const ctx = await newApiContext();
     const email = uniqueEmail();
     const auth = await register(ctx, { email, password: 'passw0rd', firstName: 'Buy', lastName: 'Er' });
@@ -38,7 +38,7 @@ test.describe('browse + purchase', () => {
 
     await page.getByRole('button', { name: /Kupuję/ }).click();
 
-    await page.waitForURL('**/mine');
+    await page.waitForURL('**/my-tickets');
     await expect(page.locator('.ticket-card')).toHaveCount(1);
     await expect(page.locator('.ticket-card .tc-meta')).toContainText(/[0-9a-f-]{36}/);
   });
