@@ -3,6 +3,7 @@ package org.example.eticket.api.controller.purchase;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.eticket.api.dto.purchase.*;
+import org.example.eticket.api.mapper.purchase.PurchaseResponseMapper;
 import org.example.eticket.application.model.purchase.*;
 import org.example.eticket.application.service.purchase.PurchaseService;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class PurchaseController {
 
     private final PurchaseService purchaseService;
+    private final PurchaseResponseMapper purchaseResponseMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('PASSENGER')")
@@ -37,7 +39,7 @@ public class PurchaseController {
                 request.boughtAt()
         ), authentication.getName());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(toResponse(view));
+                .body(purchaseResponseMapper.toPurchaseResponse(view));
     }
 
     @GetMapping("/valid")
@@ -48,7 +50,7 @@ public class PurchaseController {
     ) {
         Page<ValidTicketResponse> response = purchaseService
                 .getValidTickets(new GetValidPurchasesQuery(LocalDateTime.now(), pageable), authentication.getName())
-                .map(PurchaseController::toResponse);
+                .map(purchaseResponseMapper::toValidTicketResponse);
         return ResponseEntity.ok(response);
     }
 
@@ -59,7 +61,7 @@ public class PurchaseController {
             Authentication authentication) {
         Page<PurchaseHistoryResponse> response = purchaseService
                 .getPurchaseHistory(new GetPurchaseHistoryQuery(pageable), authentication.getName())
-                .map(PurchaseController::toResponse);
+                .map(purchaseResponseMapper::toPurchaseHistoryResponse);
         return ResponseEntity.ok(response);
     }
 
@@ -72,60 +74,6 @@ public class PurchaseController {
                 purchaseId,
                 LocalDateTime.now(),
                 request.punchedIn()));
-        return ResponseEntity.ok(toResponse(view));
-    }
-
-    private static PurchaseResponse toResponse(PurchaseView purchaseView) {
-        return new PurchaseResponse(
-                purchaseView.id(),
-                purchaseView.ticketType(),
-                purchaseView.discountType(),
-                purchaseView.price(),
-                purchaseView.durationMinutes(),
-                purchaseView.boughtAt(),
-                purchaseView.expiresAt()
-        );
-    }
-
-    private static ValidTicketResponse toResponse(ValidPurchaseView view) {
-        return new ValidTicketResponse(
-                view.id(),
-                view.ticketType(),
-                view.discountType(),
-                view.price(),
-                view.durationMinutes(),
-                view.boughtAt(),
-                view.punchedAt(),
-                view.punchedIn(),
-                view.expiresAt()
-        );
-    }
-
-    private static PurchaseHistoryResponse toResponse(PurchaseHistoryView view) {
-        return new PurchaseHistoryResponse(
-                view.id(),
-                view.ticketType(),
-                view.discountType(),
-                view.price(),
-                view.durationMinutes(),
-                view.boughtAt(),
-                view.punchedAt(),
-                view.punchedIn(),
-                view.expiresAt()
-        );
-    }
-
-    private static PunchTicketResponse toResponse(PunchTicketView view) {
-        return new PunchTicketResponse(
-                view.id(),
-                view.ticketType(),
-                view.discountType(),
-                view.price(),
-                view.durationMinutes(),
-                view.boughtAt(),
-                view.punchedAt(),
-                view.punchedIn(),
-                view.expiresAt()
-        );
+        return ResponseEntity.ok(purchaseResponseMapper.toPunchTicketResponse(view));
     }
 }

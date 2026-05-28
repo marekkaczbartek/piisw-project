@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.eticket.api.dto.auth.AuthResponse;
 import org.example.eticket.api.dto.auth.LoginRequest;
 import org.example.eticket.api.dto.auth.RegisterRequest;
+import org.example.eticket.api.mapper.auth.AuthResponseMapper;
 import org.example.eticket.application.model.auth.AuthView;
 import org.example.eticket.application.model.auth.LoginCommand;
 import org.example.eticket.application.model.auth.RegisterCommand;
@@ -20,11 +21,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthResponseMapper authResponseMapper;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthView view = authService.login(new LoginCommand(request.email(), request.password()));
-        return ResponseEntity.ok(toResponse(view));
+        return ResponseEntity.ok(authResponseMapper.toResponse(view));
     }
 
     @PostMapping("/register")
@@ -36,17 +38,6 @@ public class AuthController {
                 request.lastName()
         ));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(toResponse(view));
-    }
-
-    private static AuthResponse toResponse(AuthView view) {
-        return new AuthResponse(
-                view.token(),
-                view.id(),
-                view.email(),
-                view.role(),
-                view.firstName(),
-                view.lastName()
-        );
+                .body(authResponseMapper.toResponse(view));
     }
 }

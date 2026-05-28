@@ -3,6 +3,7 @@ package org.example.eticket.application;
 import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
 import org.example.eticket.application.exception.TicketAlreadyPunchedException;
+import org.example.eticket.application.mapper.purchase.PurchaseMapper;
 import org.example.eticket.application.model.purchase.MakePurchaseCommand;
 import org.example.eticket.application.model.purchase.PunchTicketCommand;
 import org.example.eticket.application.model.purchase.PunchTicketView;
@@ -20,6 +21,7 @@ import org.example.eticket.data.repositories.purchase.PurchaseQueryRepository;
 import org.example.eticket.data.repositories.ticket.TicketQueryRepository;
 import org.example.eticket.data.repositories.user.UserQueryRepository;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -40,7 +42,7 @@ class PurchaseServiceTest {
                 .build();
         User passenger = passenger("passenger@example.com");
         InMemoryPurchaseCommandRepository purchaseRepository = new InMemoryPurchaseCommandRepository();
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 purchaseRepository,
                 new InMemoryPurchaseQueryRepository(List.of()),
@@ -85,7 +87,7 @@ class PurchaseServiceTest {
                 .build();
         User passenger = passenger("passenger@example.com");
         InMemoryPurchaseCommandRepository purchaseRepository = new InMemoryPurchaseCommandRepository();
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 purchaseRepository,
                 new InMemoryPurchaseQueryRepository(List.of()),
@@ -112,7 +114,7 @@ class PurchaseServiceTest {
     void throwsWhenTicketDoesNotExist() {
         // given
         User passenger = passenger("passenger@example.com");
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(),
                 new InMemoryPurchaseCommandRepository(),
                 new InMemoryPurchaseQueryRepository(List.of()),
@@ -140,7 +142,7 @@ class PurchaseServiceTest {
         User passenger = passenger("passenger@example.com");
         Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.of(2024, 5, 10, 8, 0));
         InMemoryPurchaseCommandRepository purchaseRepository = new InMemoryPurchaseCommandRepository();
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 purchaseRepository,
                 new InMemoryPurchaseQueryRepository(purchase),
@@ -179,7 +181,7 @@ class PurchaseServiceTest {
         User passenger = passenger("passenger@example.com");
         Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.of(2024, 5, 10, 8, 0));
         InMemoryPurchaseCommandRepository purchaseRepository = new InMemoryPurchaseCommandRepository();
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 purchaseRepository,
                 new InMemoryPurchaseQueryRepository(purchase),
@@ -204,7 +206,7 @@ class PurchaseServiceTest {
     void throwsWhenPunchPurchaseDoesNotExist() {
         // given
         User passenger = passenger("passenger@example.com");
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(),
                 new InMemoryPurchaseCommandRepository(),
                 new InMemoryPurchaseQueryRepository(),
@@ -228,7 +230,7 @@ class PurchaseServiceTest {
                 .ticketType(TicketType.SINGLE_USE)
                 .build();
         Purchase purchase = purchase(UUID.randomUUID(), owner, ticket, LocalDateTime.now());
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 new InMemoryPurchaseCommandRepository(),
                 new InMemoryPurchaseQueryRepository(purchase),
@@ -255,7 +257,7 @@ class PurchaseServiceTest {
         User passenger = passenger("passenger@example.com");
         Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.now());
         purchase.setPunchedAt(LocalDateTime.of(2024, 5, 10, 9, 0));
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 new InMemoryPurchaseCommandRepository(),
                 new InMemoryPurchaseQueryRepository(purchase),
@@ -280,7 +282,7 @@ class PurchaseServiceTest {
                 .build();
         User passenger = passenger("passenger@example.com");
         Purchase purchase = purchase(UUID.randomUUID(), passenger, ticket, LocalDateTime.now());
-        PurchaseService service = new PurchaseService(
+        PurchaseService service = purchaseService(
                 new InMemoryTicketQueryRepository(ticket),
                 new InMemoryPurchaseCommandRepository(),
                 new InMemoryPurchaseQueryRepository(purchase),
@@ -312,6 +314,21 @@ class PurchaseServiceTest {
                 .ticket(ticket)
                 .boughtAt(boughtAt)
                 .build();
+    }
+
+    private static PurchaseService purchaseService(
+            TicketQueryRepository ticketQueryRepository,
+            PurchaseCommandRepository purchaseCommandRepository,
+            PurchaseQueryRepository purchaseQueryRepository,
+            UserResolver userResolver
+    ) {
+        return new PurchaseService(
+                ticketQueryRepository,
+                purchaseCommandRepository,
+                purchaseQueryRepository,
+                userResolver,
+                Mappers.getMapper(PurchaseMapper.class)
+        );
     }
 
     private record InMemoryTicketQueryRepository(List<Ticket> tickets) implements TicketQueryRepository {

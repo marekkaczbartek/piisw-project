@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.eticket.api.dto.validation.TicketValidationRequest;
 import org.example.eticket.api.dto.validation.TicketValidationResponse;
+import org.example.eticket.api.mapper.validation.ValidationResponseMapper;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
 import org.example.eticket.application.model.validation.ValidationResultView;
 import org.example.eticket.application.service.validation.ValidationService;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 public class ValidationController {
 
     private final ValidationService ticketValidationService;
+    private final ValidationResponseMapper validationResponseMapper;
 
     @PostMapping
     @PreAuthorize("hasRole('INSPECTOR')")
@@ -34,6 +36,6 @@ public class ValidationController {
                 request.purchaseId(),
                 LocalDateTime.now(),
                 request.checkedIn()), authentication.getName());
-        return ResponseEntity.ok(new TicketValidationResponse(view.valid()));
+        return ResponseEntity.ok(validationResponseMapper.toResponse(view));
     }
 }

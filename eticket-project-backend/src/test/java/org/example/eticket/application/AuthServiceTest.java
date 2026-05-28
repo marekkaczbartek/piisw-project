@@ -1,5 +1,6 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.mapper.auth.AuthMapper;
 import org.example.eticket.application.model.auth.LoginCommand;
 import org.example.eticket.application.model.auth.RegisterCommand;
 import org.example.eticket.application.service.auth.AuthService;
@@ -9,6 +10,7 @@ import org.example.eticket.data.enums.UserRole;
 import org.example.eticket.data.repositories.user.UserJpaRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mapstruct.factory.Mappers;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -32,7 +34,8 @@ class AuthServiceTest {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         JwtService jwtService = mock(JwtService.class);
-        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService);
+        AuthMapper authMapper = Mappers.getMapper(AuthMapper.class);
+        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService, authMapper);
 
         RegisterCommand command = new RegisterCommand("new@example.com", "secret", "New", "User");
 
@@ -63,7 +66,8 @@ class AuthServiceTest {
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         JwtService jwtService = mock(JwtService.class);
-        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService);
+        AuthMapper authMapper = Mappers.getMapper(AuthMapper.class);
+        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService, authMapper);
 
         LoginCommand command = new LoginCommand("user@example.com", "secret");
         User user = User.builder()

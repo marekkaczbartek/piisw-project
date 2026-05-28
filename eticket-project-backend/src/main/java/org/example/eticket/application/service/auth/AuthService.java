@@ -3,6 +3,7 @@ package org.example.eticket.application.service.auth;
 import lombok.RequiredArgsConstructor;
 import org.example.eticket.application.exception.ConflictException;
 import org.example.eticket.application.exception.UnauthorizedException;
+import org.example.eticket.application.mapper.auth.AuthMapper;
 import org.example.eticket.application.model.auth.AuthView;
 import org.example.eticket.application.model.auth.LoginCommand;
 import org.example.eticket.application.model.auth.RegisterCommand;
@@ -23,6 +24,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final AuthMapper authMapper;
 
     public AuthView register(RegisterCommand command) {
         if (userRepository.existsByEmail(command.email())) {
@@ -37,7 +39,7 @@ public class AuthService {
                 .role(UserRole.PASSENGER)
                 .build());
 
-        return toView(user, jwtService.generateToken(user));
+        return authMapper.toView(user, jwtService.generateToken(user));
     }
 
     public AuthView login(LoginCommand command) {
@@ -51,17 +53,6 @@ public class AuthService {
         User user = userRepository.findByEmail(command.email())
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
-        return toView(user, jwtService.generateToken(user));
-    }
-
-    private static AuthView toView(User user, String token) {
-        return new AuthView(
-                token,
-                user.getId(),
-                user.getEmail(),
-                user.getRole(),
-                user.getFirstName(),
-                user.getLastName()
-        );
+        return authMapper.toView(user, jwtService.generateToken(user));
     }
 }
