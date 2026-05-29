@@ -1,6 +1,6 @@
 package org.example.eticket.data.repositories.ticket;
 
-import org.example.eticket.data.entities.Ticket;
+import org.example.eticket.data.dto.TicketData;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
 
@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TicketQueryRepository {
-    List<Ticket> findAll();
+    List<TicketData> findAll();
 
-    Optional<Ticket> findByTicketTypeAndDiscountTypeAndDurationMinutes(
+    Optional<TicketData> findByTicketTypeAndDiscountTypeAndDurationMinutes(
             TicketType ticketType,
             DiscountType discountType,
             Integer durationMinutes

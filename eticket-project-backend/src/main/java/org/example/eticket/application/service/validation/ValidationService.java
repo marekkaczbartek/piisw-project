@@ -5,9 +5,9 @@ import org.example.eticket.application.exception.PurchaseNotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
 import org.example.eticket.application.model.validation.ValidationResultView;
 import org.example.eticket.application.service.auth.UserResolver;
-import org.example.eticket.data.entities.Purchase;
-import org.example.eticket.data.entities.User;
-import org.example.eticket.data.entities.Validation;
+import org.example.eticket.data.dto.PurchaseData;
+import org.example.eticket.data.dto.UserData;
+import org.example.eticket.data.dto.ValidationData;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.repositories.purchase.PurchaseCommandRepository;
 import org.example.eticket.data.repositories.purchase.PurchaseQueryRepository;
@@ -28,9 +28,9 @@ public class ValidationService {
     private final UserResolver userResolver;
 
     public ValidationResultView validatePurchase(ValidateTicketCommand command, String inspectorEmail) {
-        Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
+        PurchaseData purchase = purchaseQueryRepository.findById(command.purchaseId())
                 .orElseThrow(PurchaseNotFoundException::new);
-        User inspector = userResolver.resolveByEmail(inspectorEmail, "Inspector not found");
+        UserData inspector = userResolver.resolveByEmail(inspectorEmail, "Inspector not found");
         boolean result = isValidForInspection(
                 purchase,
                 command.checkedAt(),
@@ -42,7 +42,7 @@ public class ValidationService {
             purchaseCommandRepository.save(purchase);
         }
 
-        Validation validation = Validation.builder()
+        ValidationData validation = ValidationData.builder()
                 .inspector(inspector)
                 .purchase(purchase)
                 .checkedAt(command.checkedAt())

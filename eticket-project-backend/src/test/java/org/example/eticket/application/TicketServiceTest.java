@@ -3,7 +3,7 @@ package org.example.eticket.application;
 import org.example.eticket.application.mapper.ticket.TicketMapper;
 import org.example.eticket.application.model.ticket.TicketView;
 import org.example.eticket.application.service.ticket.TicketService;
-import org.example.eticket.data.entities.Ticket;
+import org.example.eticket.data.dto.TicketData;
 import org.example.eticket.data.enums.DiscountType;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.repositories.ticket.TicketQueryRepository;
@@ -36,13 +36,13 @@ class TicketServiceTest {
     @Test
     void returnsAllTicketsWithDurationIfProvided() {
         // given
-        Ticket singleUse = Ticket.builder()
+        TicketData singleUse = TicketData.builder()
                 .ticketType(TicketType.SINGLE_USE)
                 .discountType(DiscountType.NORMAL)
                 .price(new BigDecimal("3.50"))
                 .durationMinutes(null)
                 .build();
-        Ticket timeBased = Ticket.builder()
+        TicketData timeBased = TicketData.builder()
                 .ticketType(TicketType.TIME_BASED)
                 .discountType(DiscountType.REDUCED)
                 .price(new BigDecimal("2.00"))
@@ -66,12 +66,12 @@ class TicketServiceTest {
     @Test
     void returnsAllTicketsWhenRequested() {
         // given
-        Ticket first = Ticket.builder()
+        TicketData first = TicketData.builder()
                 .ticketType(TicketType.SINGLE_USE)
                 .discountType(DiscountType.NORMAL)
                 .price(new BigDecimal("3.50"))
                 .build();
-        Ticket second = Ticket.builder()
+        TicketData second = TicketData.builder()
                 .ticketType(TicketType.TIME_BASED)
                 .discountType(DiscountType.REDUCED)
                 .price(new BigDecimal("2.00"))
@@ -92,19 +92,19 @@ class TicketServiceTest {
         assertEquals(expected, result);
     }
 
-    private record InMemoryTicketReadRepository(List<Ticket> tickets) implements TicketQueryRepository {
+    private record InMemoryTicketReadRepository(List<TicketData> tickets) implements TicketQueryRepository {
 
-        private InMemoryTicketReadRepository(List<Ticket> tickets) {
+        private InMemoryTicketReadRepository(List<TicketData> tickets) {
             this.tickets = new ArrayList<>(tickets);
         }
 
         @Override
-        public List<Ticket> findAll() {
+        public List<TicketData> findAll() {
             return List.copyOf(tickets);
         }
 
         @Override
-        public Optional<Ticket> findByTicketTypeAndDiscountTypeAndDurationMinutes(
+        public Optional<TicketData> findByTicketTypeAndDiscountTypeAndDurationMinutes(
                 TicketType ticketType,
                 DiscountType discountType,
                 Integer durationMinutes

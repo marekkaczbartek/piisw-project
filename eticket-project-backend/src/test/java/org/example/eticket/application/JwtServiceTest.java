@@ -2,7 +2,7 @@ package org.example.eticket.application;
 
 import org.example.eticket.application.service.auth.JwtService;
 import org.example.eticket.config.JwtProperties;
-import org.example.eticket.data.entities.User;
+import org.example.eticket.data.dto.UserData;
 import org.example.eticket.data.enums.UserRole;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +21,7 @@ class JwtServiceTest {
                 60);
 
         JwtService jwtService = new JwtService(properties);
-        User user = User.builder()
+        UserData user = UserData.builder()
                 .id(UUID.randomUUID())
                 .email("user@example.com")
                 .passwordHash("hash")
@@ -52,7 +52,7 @@ class JwtServiceTest {
 
         JwtService validatorService = new JwtService(expectedIssuerProperties);
         JwtService tokenIssuerService = new JwtService(unexpectedIssuerProperties);
-        User user = User.builder()
+        UserData user = UserData.builder()
                 .id(UUID.randomUUID())
                 .email("user@example.com")
                 .passwordHash("hash")

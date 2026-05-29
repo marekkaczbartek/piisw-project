@@ -1,6 +1,7 @@
 package org.example.eticket.data.repositories.purchase;
 
-import org.example.eticket.data.entities.Purchase;
+import org.example.eticket.data.dto.PurchaseData;
+import org.example.eticket.data.mapper.PurchaseDataMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -13,23 +14,29 @@ import java.util.UUID;
 public class PurchaseQueryRepositoryAdapter implements PurchaseQueryRepository {
 
     private final PurchaseJpaRepository purchaseJpaRepository;
+    private final PurchaseDataMapper purchaseDataMapper;
 
-    public PurchaseQueryRepositoryAdapter(PurchaseJpaRepository purchaseJpaRepository) {
+    public PurchaseQueryRepositoryAdapter(PurchaseJpaRepository purchaseJpaRepository, PurchaseDataMapper purchaseDataMapper) {
         this.purchaseJpaRepository = purchaseJpaRepository;
+        this.purchaseDataMapper = purchaseDataMapper;
     }
 
     @Override
-    public Optional<Purchase> findById(UUID id) {
-        return purchaseJpaRepository.findById(id);
+    public Optional<PurchaseData> findById(UUID id) {
+        return purchaseJpaRepository.findById(id)
+                .map(purchaseDataMapper::toData);
     }
 
     @Override
-    public List<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId) {
-        return purchaseJpaRepository.findAllByPassengerIdOrderByBoughtAtDesc(passengerId);
+    public List<PurchaseData> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId) {
+        return purchaseJpaRepository.findAllByPassengerIdOrderByBoughtAtDesc(passengerId).stream()
+                .map(purchaseDataMapper::toData)
+                .toList();
     }
 
     @Override
-    public Page<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId, Pageable pageable) {
-        return purchaseJpaRepository.findAllByPassengerIdOrderByBoughtAtDesc(passengerId, pageable);
+    public Page<PurchaseData> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId, Pageable pageable) {
+        return purchaseJpaRepository.findAllByPassengerIdOrderByBoughtAtDesc(passengerId, pageable)
+                .map(purchaseDataMapper::toData);
     }
 }

@@ -7,9 +7,10 @@ import org.example.eticket.application.mapper.auth.AuthMapper;
 import org.example.eticket.application.model.auth.AuthView;
 import org.example.eticket.application.model.auth.LoginCommand;
 import org.example.eticket.application.model.auth.RegisterCommand;
-import org.example.eticket.data.entities.User;
+import org.example.eticket.data.dto.UserData;
 import org.example.eticket.data.enums.UserRole;
-import org.example.eticket.data.repositories.user.UserJpaRepository;
+import org.example.eticket.data.repositories.user.UserCommandRepository;
+import org.example.eticket.data.repositories.user.UserQueryRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -20,18 +21,19 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserJpaRepository userRepository;
+    private final UserCommandRepository userCommandRepository;
+    private final UserQueryRepository userQueryRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final AuthMapper authMapper;
 
     public AuthView register(RegisterCommand command) {
-        if (userRepository.existsByEmail(command.email())) {
+        if (userQueryRepository.existsByEmail(command.email())) {
             throw new EmailAlreadyRegisteredException();
         }
 
-        User user = userRepository.save(User.builder()
+        UserData user = userCommandRepository.save(UserData.builder()
                 .email(command.email())
                 .passwordHash(passwordEncoder.encode(command.password()))
                 .firstName(command.firstName())
@@ -50,7 +52,7 @@ public class AuthService {
             throw new UnauthorizedException("Invalid credentials");
         }
 
-        User user = userRepository.findByEmail(command.email())
+        UserData user = userQueryRepository.findByEmail(command.email())
                 .orElseThrow(() -> new UnauthorizedException("Invalid credentials"));
 
         return authMapper.toView(user, jwtService.generateToken(user));

@@ -5,7 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.example.eticket.config.JwtProperties;
-import org.example.eticket.data.entities.User;
+import org.example.eticket.data.dto.UserData;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -23,7 +23,7 @@ public class JwtService {
         this.signingKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(properties.secret()));
     }
 
-    public String generateToken(User user) {
+    public String generateToken(UserData user) {
         Instant now = Instant.now();
         Instant expiresAt = now.plusSeconds(properties.expirationMinutes() * 60);
 

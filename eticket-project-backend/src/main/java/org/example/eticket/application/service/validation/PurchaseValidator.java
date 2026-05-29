@@ -1,22 +1,22 @@
 package org.example.eticket.application.service.validation;
 
-import org.example.eticket.data.entities.Purchase;
-import org.example.eticket.data.entities.Ticket;
+import org.example.eticket.data.dto.PurchaseData;
+import org.example.eticket.data.dto.TicketData;
 
 import java.time.LocalDateTime;
 
 public class PurchaseValidator {
 
-    public static boolean isValidAt(Purchase purchase, LocalDateTime checkedAt) {
+    public static boolean isValidAt(PurchaseData purchase, LocalDateTime checkedAt) {
         return isValid(purchase, checkedAt, null);
     }
 
-    public static boolean isValidForInspection(Purchase purchase, LocalDateTime checkedAt, String checkedIn) {
+    public static boolean isValidForInspection(PurchaseData purchase, LocalDateTime checkedAt, String checkedIn) {
         return isValid(purchase, checkedAt, checkedIn);
     }
 
-    private static boolean isValid(Purchase purchase, LocalDateTime checkedAt, String checkedIn) {
-        Ticket ticket = purchase.getTicket();
+    private static boolean isValid(PurchaseData purchase, LocalDateTime checkedAt, String checkedIn) {
+        TicketData ticket = purchase.getTicket();
         if (ticket == null || ticket.getTicketType() == null) {
             return false;
         }
@@ -28,7 +28,7 @@ public class PurchaseValidator {
         };
     }
 
-    private static boolean isPeriodValid(Purchase purchase, LocalDateTime checkedAt) {
+    private static boolean isPeriodValid(PurchaseData purchase, LocalDateTime checkedAt) {
         LocalDateTime boughtAt = purchase.getBoughtAt();
         LocalDateTime expiresAt = purchase.getExpiresAt();
         if (boughtAt == null || expiresAt == null) {
@@ -37,7 +37,7 @@ public class PurchaseValidator {
         return !checkedAt.isBefore(boughtAt) && !checkedAt.isAfter(expiresAt);
     }
 
-    private static boolean isSingleUseValid(Purchase purchase, String checkedIn) {
+    private static boolean isSingleUseValid(PurchaseData purchase, String checkedIn) {
         if (purchase.getExpiresAt() != null) {
             return false;
         }
@@ -47,7 +47,7 @@ public class PurchaseValidator {
         return purchase.getPunchedIn().equals(checkedIn);
     }
 
-    private static boolean isTimeBasedValid(Purchase purchase, LocalDateTime checkedAt) {
+    private static boolean isTimeBasedValid(PurchaseData purchase, LocalDateTime checkedAt) {
         LocalDateTime punchedAt = purchase.getPunchedAt();
         LocalDateTime expiresAt = purchase.getExpiresAt();
         if (punchedAt == null || expiresAt == null) {

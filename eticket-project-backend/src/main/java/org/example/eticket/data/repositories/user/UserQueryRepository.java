@@ -1,10 +1,12 @@
 package org.example.eticket.data.repositories.user;
 
-import org.example.eticket.data.entities.User;
+import org.example.eticket.data.dto.UserData;
 
 import java.util.Optional;
 
 public interface UserQueryRepository {
-    Optional<User> findByEmail(String email);
+    Optional<UserData> findByEmail(String email);
+
+    boolean existsByEmail(String email);
 }
 

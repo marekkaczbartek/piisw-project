@@ -9,9 +9,9 @@ import org.example.eticket.application.exception.TicketNotFoundException;
 import org.example.eticket.application.mapper.purchase.PurchaseMapper;
 import org.example.eticket.application.model.purchase.*;
 import org.example.eticket.application.service.auth.UserResolver;
-import org.example.eticket.data.entities.Purchase;
-import org.example.eticket.data.entities.Ticket;
-import org.example.eticket.data.entities.User;
+import org.example.eticket.data.dto.PurchaseData;
+import org.example.eticket.data.dto.TicketData;
+import org.example.eticket.data.dto.UserData;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.repositories.purchase.PurchaseCommandRepository;
 import org.example.eticket.data.repositories.purchase.PurchaseQueryRepository;
@@ -38,8 +38,8 @@ public class PurchaseService {
     private final PurchaseMapper purchaseMapper;
 
     public PurchaseView makePurchase(MakePurchaseCommand command, String passengerEmail) {
-        User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
-        Ticket ticket = ticketQueryRepository.findByTicketTypeAndDiscountTypeAndDurationMinutes(
+        UserData passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
+        TicketData ticket = ticketQueryRepository.findByTicketTypeAndDiscountTypeAndDurationMinutes(
                 command.ticketType(),
                 command.discountType(),
                 command.durationMinutes()
@@ -47,43 +47,42 @@ public class PurchaseService {
 
         LocalDateTime expiresAt = resolveExpiry(ticket, command.boughtAt());
 
-        Purchase purchase = Purchase.builder()
+        PurchaseData purchase = PurchaseData.builder()
                 .passenger(passenger)
                 .ticket(ticket)
                 .boughtAt(command.boughtAt())
                 .expiresAt(expiresAt)
                 .build();
 
-        Purchase saved = purchaseCommandRepository.save(purchase);
+        PurchaseData saved = purchaseCommandRepository.save(purchase);
         return purchaseMapper.toPurchaseView(saved);
     }
 
     public PunchTicketView punchTicket(PunchTicketCommand command) {
-        Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
+        PurchaseData purchase = purchaseQueryRepository.findById(command.purchaseId())
                 .orElseThrow(PurchaseNotFoundException::new);
         if (purchase.getPunchedAt() != null) {
             throw new TicketAlreadyPunchedException();
         }
 
-        Ticket ticket = purchase.getTicket();
+        TicketData ticket = purchase.getTicket();
         if (ticket == null || ticket.getTicketType() == null) {
             throw new FieldRequiredException("ticketType");
         }
 
         LocalDateTime expiresAt = resolvePunchExpiry(ticket, command.punchedAt());
-        // nie dzialac tu na encjach
         purchase.setPunchedAt(command.punchedAt());
         purchase.setPunchedIn(command.punchedIn());
         purchase.setExpiresAt(expiresAt);
 
-        Purchase saved = purchaseCommandRepository.save(purchase);
+        PurchaseData saved = purchaseCommandRepository.save(purchase);
         return purchaseMapper.toPunchTicketView(saved);
     }
 
     public Page<ValidPurchaseView> getValidTickets(GetValidPurchasesQuery query, String passengerEmail) {
-        User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
+        UserData passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
 
-        List<Purchase> validPurchases = purchaseQueryRepository
+        List<PurchaseData> validPurchases = purchaseQueryRepository
                 .findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId()).stream()
                 .filter(purchase -> isValidAt(purchase, query.checkedAt()))
                 .toList();
@@ -92,12 +91,12 @@ public class PurchaseService {
     }
 
     public Page<PurchaseHistoryView> getPurchaseHistory(GetPurchaseHistoryQuery query, String passengerEmail) {
-        User passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
+        UserData passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
         return purchaseQueryRepository.findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId(), query.pageable())
                 .map(purchaseMapper::toPurchaseHistoryView);
     }
 
-    private static LocalDateTime resolveExpiry(Ticket ticket, LocalDateTime boughtAt) {
+    private static LocalDateTime resolveExpiry(TicketData ticket, LocalDateTime boughtAt) {
         if (ticket.getTicketType() != TicketType.PERIOD) {
             return null;
         }
@@ -108,7 +107,7 @@ public class PurchaseService {
         return boughtAt.plusMinutes(durationMinutes);
     }
 
-    private static LocalDateTime resolvePunchExpiry(Ticket ticket, LocalDateTime punchedAt) {
+    private static LocalDateTime resolvePunchExpiry(TicketData ticket, LocalDateTime punchedAt) {
         if (ticket.getTicketType() == TicketType.PERIOD) {
             throw new PeriodTicketPunchNotAllowedException();
         }
