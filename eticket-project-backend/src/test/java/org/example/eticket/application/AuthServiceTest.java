@@ -6,9 +6,10 @@ import org.example.eticket.application.model.auth.LoginCommand;
 import org.example.eticket.application.model.auth.RegisterCommand;
 import org.example.eticket.application.service.auth.AuthService;
 import org.example.eticket.application.service.auth.JwtService;
-import org.example.eticket.data.entities.User;
+import org.example.eticket.data.dto.UserData;
 import org.example.eticket.data.enums.UserRole;
-import org.example.eticket.data.repositories.user.UserJpaRepository;
+import org.example.eticket.data.repositories.user.UserCommandRepository;
+import org.example.eticket.data.repositories.user.UserQueryRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mapstruct.factory.Mappers;
@@ -32,58 +33,80 @@ class AuthServiceTest {
     @Test
     void registerCreatesUserWithEncodedPassword() {
         // given
-        UserJpaRepository userRepository = mock(UserJpaRepository.class);
+        UserCommandRepository userCommandRepository = mock(UserCommandRepository.class);
+        UserQueryRepository userQueryRepository = mock(UserQueryRepository.class);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         JwtService jwtService = mock(JwtService.class);
         AuthMapper authMapper = Mappers.getMapper(AuthMapper.class);
-        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService, authMapper);
+        AuthService authService = new AuthService(
+                userCommandRepository,
+                userQueryRepository,
+                passwordEncoder,
+                authenticationManager,
+                jwtService,
+                authMapper
+        );
 
         RegisterCommand command = new RegisterCommand("new@example.com", "secret", "New", "User");
 
-        when(userRepository.existsByEmail(command.email())).thenReturn(false);
-        when(jwtService.generateToken(any(User.class))).thenReturn("token");
+        when(userQueryRepository.existsByEmail(command.email())).thenReturn(false);
+        when(jwtService.generateToken(any(UserData.class))).thenReturn("token");
 
-        ArgumentCaptor<User> captor = ArgumentCaptor.forClass(User.class);
-        when(userRepository.save(captor.capture())).thenAnswer(invocation -> {
-            User saved = invocation.getArgument(0, User.class);
-            saved.setId(UUID.randomUUID());
-            return saved;
+        ArgumentCaptor<UserData> captor = ArgumentCaptor.forClass(UserData.class);
+        when(userCommandRepository.save(captor.capture())).thenAnswer(invocation -> {
+            UserData saved = invocation.getArgument(0, UserData.class);
+            return new UserData(
+                    UUID.randomUUID(),
+                    saved.role(),
+                    saved.email(),
+                    saved.passwordHash(),
+                    saved.firstName(),
+                    saved.lastName()
+            );
         });
 
         // when
         authService.register(command);
 
         // then
-        User captured = captor.getValue();
-        assertEquals(command.email(), captured.getEmail());
-        assertEquals(UserRole.PASSENGER, captured.getRole());
-        assertTrue(passwordEncoder.matches(command.password(), captured.getPasswordHash()));
+        UserData captured = captor.getValue();
+        assertEquals(command.email(), captured.email());
+        assertEquals(UserRole.PASSENGER, captured.role());
+        assertTrue(passwordEncoder.matches(command.password(), captured.passwordHash()));
     }
 
     @Test
     void loginAuthenticatesAndReturnsUser() {
         // given
-        UserJpaRepository userRepository = mock(UserJpaRepository.class);
+        UserCommandRepository userCommandRepository = mock(UserCommandRepository.class);
+        UserQueryRepository userQueryRepository = mock(UserQueryRepository.class);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         JwtService jwtService = mock(JwtService.class);
         AuthMapper authMapper = Mappers.getMapper(AuthMapper.class);
-        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService, authMapper);
+        AuthService authService = new AuthService(
+                userCommandRepository,
+                userQueryRepository,
+                passwordEncoder,
+                authenticationManager,
+                jwtService,
+                authMapper
+        );
 
         LoginCommand command = new LoginCommand("user@example.com", "secret");
-        User user = User.builder()
-                .id(UUID.randomUUID())
-                .email(command.email())
-                .passwordHash(passwordEncoder.encode(command.password()))
-                .firstName("Ula")
-                .lastName("User")
-                .role(UserRole.PASSENGER)
-                .build();
+        UserData user = new UserData(
+                UUID.randomUUID(),
+                UserRole.PASSENGER,
+                command.email(),
+                passwordEncoder.encode(command.password()),
+                "Ula",
+                "User"
+        );
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(new UsernamePasswordAuthenticationToken(command.email(), command.password()));
-        when(userRepository.findByEmail(command.email())).thenReturn(Optional.of(user));
+        when(userQueryRepository.findByEmail(command.email())).thenReturn(Optional.of(user));
         when(jwtService.generateToken(user)).thenReturn("token");
 
         // when
@@ -96,16 +119,24 @@ class AuthServiceTest {
     @Test
     void registerThrowsWhenEmailAlreadyRegistered() {
         // given
-        UserJpaRepository userRepository = mock(UserJpaRepository.class);
+        UserCommandRepository userCommandRepository = mock(UserCommandRepository.class);
+        UserQueryRepository userQueryRepository = mock(UserQueryRepository.class);
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
         JwtService jwtService = mock(JwtService.class);
         AuthMapper authMapper = Mappers.getMapper(AuthMapper.class);
-        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService, authMapper);
+        AuthService authService = new AuthService(
+                userCommandRepository,
+                userQueryRepository,
+                passwordEncoder,
+                authenticationManager,
+                jwtService,
+                authMapper
+        );
 
         RegisterCommand command = new RegisterCommand("new@example.com", "secret", "New", "User");
 
-        when(userRepository.existsByEmail(command.email())).thenReturn(true);
+        when(userQueryRepository.existsByEmail(command.email())).thenReturn(true);
 
         // when
         EmailAlreadyRegisteredException ex = assertThrows(EmailAlreadyRegisteredException.class,

@@ -1,8 +1,8 @@
 package org.example.eticket.data.repositories.validation;
 
-import org.example.eticket.data.entities.Validation;
+import org.example.eticket.data.dto.ValidationData;
 
 public interface ValidationCommandRepository {
-    Validation save(Validation validation);
+    ValidationData save(ValidationData validation);
 }
 

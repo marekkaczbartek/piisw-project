@@ -1,6 +1,6 @@
 package org.example.eticket.data.repositories.purchase;
 
-import org.example.eticket.data.entities.Purchase;
+import org.example.eticket.data.dto.PurchaseData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -10,9 +10,9 @@ import java.util.UUID;
 
 public interface PurchaseQueryRepository {
 
-    Optional<Purchase> findById(UUID id);
+    Optional<PurchaseData> findById(UUID id);
 
-    List<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId);
+    List<PurchaseData> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId);
 
-    Page<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId, Pageable pageable);
+    Page<PurchaseData> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId, Pageable pageable);
 }

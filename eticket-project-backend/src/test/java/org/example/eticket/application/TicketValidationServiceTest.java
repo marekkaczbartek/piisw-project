@@ -4,10 +4,10 @@ import org.example.eticket.application.exception.PurchaseNotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
 import org.example.eticket.application.service.auth.UserResolver;
 import org.example.eticket.application.service.validation.ValidationService;
-import org.example.eticket.data.entities.Purchase;
-import org.example.eticket.data.entities.Ticket;
-import org.example.eticket.data.entities.User;
-import org.example.eticket.data.entities.Validation;
+import org.example.eticket.data.dto.PurchaseData;
+import org.example.eticket.data.dto.TicketData;
+import org.example.eticket.data.dto.UserData;
+import org.example.eticket.data.dto.ValidationData;
 import org.example.eticket.data.enums.TicketType;
 import org.example.eticket.data.enums.UserRole;
 import org.example.eticket.data.repositories.purchase.PurchaseCommandRepository;
@@ -29,13 +29,16 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime expiresAt = boughtAt.plusDays(1);
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.PERIOD)
-                .durationMinutes(24 * 60)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
-        Map<UUID, Purchase> purchases = purchasesMap(purchase);
-        User inspector = inspector("inspector@example.com");
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.PERIOD,
+                null,
+                null,
+                24 * 60
+        );
+        PurchaseData purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
+        Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
+        UserData inspector = inspector("inspector@example.com");
         InMemoryValidationCommandRepository validationRepository = new InMemoryValidationCommandRepository();
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
@@ -50,17 +53,17 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertTrue(result.valid());
-        Validation saved = validationRepository.singleSaved();
+        ValidationData saved = validationRepository.singleSaved();
         assertNotNull(saved);
-        assertEquals(inspector.getEmail(), saved.getInspector().getEmail());
-        assertEquals(purchaseId, saved.getPurchase().getId());
-        assertEquals(command.checkedAt(), saved.getCheckedAt());
-        assertEquals(command.checkedIn(), saved.getCheckedIn());
-        assertTrue(saved.getResult());
+        assertEquals(inspector.email(), saved.inspector().email());
+        assertEquals(purchaseId, saved.purchase().id());
+        assertEquals(command.checkedAt(), saved.checkedAt());
+        assertEquals(command.checkedIn(), saved.checkedIn());
+        assertTrue(saved.result());
     }
 
     @Test
@@ -69,13 +72,16 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime expiresAt = boughtAt.plusDays(1);
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.PERIOD)
-                .durationMinutes(24 * 60)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
-        Map<UUID, Purchase> purchases = purchasesMap(purchase);
-        User inspector = inspector("inspector@example.com");
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.PERIOD,
+                null,
+                null,
+                24 * 60
+        );
+        PurchaseData purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
+        Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
+        UserData inspector = inspector("inspector@example.com");
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
                 new InMemoryPurchaseCommandRepository(purchases),
@@ -89,7 +95,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertFalse(result.valid());
@@ -100,12 +106,16 @@ class TicketValidationServiceTest {
         // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
-        Map<UUID, Purchase> purchases = purchasesMap(purchase);
-        User inspector = inspector("inspector@example.com");
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                null,
+                null,
+                null
+        );
+        PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
+        Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
+        UserData inspector = inspector("inspector@example.com");
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
                 new InMemoryPurchaseCommandRepository(purchases),
@@ -119,7 +129,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertTrue(result.valid());
@@ -130,12 +140,16 @@ class TicketValidationServiceTest {
         // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
-        Map<UUID, Purchase> purchases = purchasesMap(purchase);
-        User inspector = inspector("inspector@example.com");
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                null,
+                null,
+                null
+        );
+        PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
+        Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
+        UserData inspector = inspector("inspector@example.com");
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
                 new InMemoryPurchaseCommandRepository(purchases),
@@ -154,12 +168,12 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var firstResult = service.validatePurchase(firstCommand, inspector.getEmail());
-        var secondResult = service.validatePurchase(secondCommand, inspector.getEmail());
+        var firstResult = service.validatePurchase(firstCommand, inspector.email());
+        var secondResult = service.validatePurchase(secondCommand, inspector.email());
 
         // then
         assertTrue(firstResult.valid());
-        assertEquals(firstCommand.checkedAt(), purchase.getExpiresAt());
+        assertEquals(firstCommand.checkedAt(), purchases.get(purchaseId).expiresAt());
         assertFalse(secondResult.valid());
     }
 
@@ -168,12 +182,16 @@ class TicketValidationServiceTest {
         // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
-        Map<UUID, Purchase> purchases = purchasesMap(purchase);
-        User inspector = inspector("inspector@example.com");
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                null,
+                null,
+                null
+        );
+        PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
+        Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
+        UserData inspector = inspector("inspector@example.com");
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
                 new InMemoryPurchaseCommandRepository(purchases),
@@ -187,7 +205,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertFalse(result.valid());
@@ -199,13 +217,16 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         LocalDateTime expiresAt = punchedAt.plusMinutes(30);
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.TIME_BASED)
-                .durationMinutes(30)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
-        Map<UUID, Purchase> purchases = purchasesMap(purchase);
-        User inspector = inspector("inspector@example.com");
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.TIME_BASED,
+                null,
+                null,
+                30
+        );
+        PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
+        Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
+        UserData inspector = inspector("inspector@example.com");
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
                 new InMemoryPurchaseCommandRepository(purchases),
@@ -219,7 +240,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertTrue(result.valid());
@@ -231,13 +252,16 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         LocalDateTime expiresAt = punchedAt.plusMinutes(30);
-        Ticket ticket = Ticket.builder()
-                .ticketType(TicketType.TIME_BASED)
-                .durationMinutes(30)
-                .build();
-        Purchase purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
-        Map<UUID, Purchase> purchases = purchasesMap(purchase);
-        User inspector = inspector("inspector@example.com");
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.TIME_BASED,
+                null,
+                null,
+                30
+        );
+        PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
+        Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
+        UserData inspector = inspector("inspector@example.com");
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
                 new InMemoryPurchaseCommandRepository(purchases),
@@ -251,7 +275,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertFalse(result.valid());
@@ -260,8 +284,8 @@ class TicketValidationServiceTest {
     @Test
     void throwsWhenPurchaseDoesNotExist() {
         // given
-        User inspector = inspector("inspector@example.com");
-        Map<UUID, Purchase> purchases = purchasesMap();
+        UserData inspector = inspector("inspector@example.com");
+        Map<UUID, PurchaseData> purchases = purchasesMap();
         ValidationService service = new ValidationService(
                 new InMemoryPurchaseQueryRepository(purchases),
                 new InMemoryPurchaseCommandRepository(purchases),
@@ -273,71 +297,75 @@ class TicketValidationServiceTest {
         // when
         PurchaseNotFoundException ex = assertThrows(PurchaseNotFoundException.class, () -> service.validatePurchase(
                 command,
-                inspector.getEmail()
+                inspector.email()
         ));
 
         // then
         assertEquals("Purchase not found", ex.getMessage());
     }
 
-    private static User inspector(String email) {
-        return User.builder()
-                .id(UUID.randomUUID())
-                .email(email)
-                .role(UserRole.INSPECTOR)
-                .build();
+    private static UserData inspector(String email) {
+        return new UserData(
+                UUID.randomUUID(),
+                UserRole.INSPECTOR,
+                email,
+                null,
+                null,
+                null
+        );
     }
 
 
-    private static Purchase purchase(
-            Ticket ticket,
+    private static PurchaseData purchase(
+            TicketData ticket,
             UUID id,
             LocalDateTime boughtAt,
             LocalDateTime punchedAt,
             String punchedIn,
             LocalDateTime expiresAt
     ) {
-        return Purchase.builder()
-                .id(id)
-                .ticket(ticket)
-                .boughtAt(boughtAt)
-                .punchedAt(punchedAt)
-                .punchedIn(punchedIn)
-                .expiresAt(expiresAt)
-                .build();
+        return new PurchaseData(
+                id,
+                null,
+                ticket,
+                boughtAt,
+                punchedAt,
+                punchedIn,
+                expiresAt
+        );
     }
 
-    private static Map<UUID, Purchase> purchasesMap(Purchase... purchases) {
-        Map<UUID, Purchase> map = new HashMap<>();
-        for (Purchase purchase : purchases) {
-            map.put(purchase.getId(), purchase);
+    private static Map<UUID, PurchaseData> purchasesMap(PurchaseData... purchases) {
+        Map<UUID, PurchaseData> map = new HashMap<>();
+        for (PurchaseData purchase : purchases) {
+            map.put(purchase.id(), purchase);
         }
         return map;
     }
 
-    private record InMemoryPurchaseQueryRepository(Map<UUID, Purchase> purchases) implements PurchaseQueryRepository {
+    private record InMemoryPurchaseQueryRepository(Map<UUID, PurchaseData> purchases) implements PurchaseQueryRepository {
 
         @Override
-        public Optional<Purchase> findById(UUID id) {
+        public Optional<PurchaseData> findById(UUID id) {
             return Optional.ofNullable(purchases.get(id));
         }
 
         @Override
-        public List<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId) {
+        public List<PurchaseData> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId) {
             return purchases.values().stream()
-                    .filter(purchase -> purchase.getPassenger() != null)
-                    .filter(purchase -> passengerId.equals(purchase.getPassenger().getId()))
-                    .sorted(Comparator.comparing(Purchase::getBoughtAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .filter(purchase -> purchase.passenger() != null)
+                    .filter(purchase -> passengerId.equals(purchase.passenger().id()))
+                    .sorted(Comparator.comparing(PurchaseData::boughtAt, Comparator.nullsLast(Comparator.naturalOrder()))
                             .reversed())
                     .toList();
         }
 
         @Override
-        public org.springframework.data.domain.Page<Purchase> findAllByPassengerIdOrderByBoughtAtDesc(
+        public org.springframework.data.domain.Page<PurchaseData> findAllByPassengerIdOrderByBoughtAtDesc(
                 UUID passengerId,
                 org.springframework.data.domain.Pageable pageable
         ) {
-            List<Purchase> sorted = findAllByPassengerIdOrderByBoughtAtDesc(passengerId);
+            List<PurchaseData> sorted = findAllByPassengerIdOrderByBoughtAtDesc(passengerId);
             int start = Math.toIntExact(pageable.getOffset());
             if (start >= sorted.size()) {
                 return new org.springframework.data.domain.PageImpl<>(List.of(), pageable, sorted.size());
@@ -348,37 +376,42 @@ class TicketValidationServiceTest {
     }
 
 
-    private record InMemoryUserQueryRepository(Map<String, User> users) implements UserQueryRepository {
+    private record InMemoryUserQueryRepository(Map<String, UserData> users) implements UserQueryRepository {
 
-        private InMemoryUserQueryRepository(User... users) {
+        private InMemoryUserQueryRepository(UserData... users) {
             this(usersMap(users));
         }
 
-        private static Map<String, User> usersMap(User... users) {
-            Map<String, User> map = new HashMap<>();
-            for (User user : users) {
-                map.put(user.getEmail(), user);
+        private static Map<String, UserData> usersMap(UserData... users) {
+            Map<String, UserData> map = new HashMap<>();
+            for (UserData user : users) {
+                map.put(user.email(), user);
             }
             return map;
         }
 
         @Override
-        public Optional<User> findByEmail(String email) {
+        public Optional<UserData> findByEmail(String email) {
             return Optional.ofNullable(users.get(email));
+        }
+
+        @Override
+        public boolean existsByEmail(String email) {
+            return users.containsKey(email);
         }
     }
 
     private static class InMemoryValidationCommandRepository implements ValidationCommandRepository {
 
-        private final List<Validation> saved = new ArrayList<>();
+        private final List<ValidationData> saved = new ArrayList<>();
 
         @Override
-        public Validation save(Validation validation) {
+        public ValidationData save(ValidationData validation) {
             saved.add(validation);
             return validation;
         }
 
-        private Validation singleSaved() {
+        private ValidationData singleSaved() {
             if (saved.isEmpty()) {
                 return null;
             }
@@ -387,11 +420,11 @@ class TicketValidationServiceTest {
     }
 
     private record InMemoryPurchaseCommandRepository(
-            Map<UUID, Purchase> purchases) implements PurchaseCommandRepository {
+            Map<UUID, PurchaseData> purchases) implements PurchaseCommandRepository {
 
         @Override
-        public Purchase save(Purchase purchase) {
-            purchases.put(purchase.getId(), purchase);
+        public PurchaseData save(PurchaseData purchase) {
+            purchases.put(purchase.id(), purchase);
             return purchase;
         }
     }
