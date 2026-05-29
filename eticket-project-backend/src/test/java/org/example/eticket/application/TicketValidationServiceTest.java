@@ -29,10 +29,13 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime expiresAt = boughtAt.plusDays(1);
-        TicketData ticket = TicketData.builder()
-                .ticketType(TicketType.PERIOD)
-                .durationMinutes(24 * 60)
-                .build();
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.PERIOD,
+                null,
+                null,
+                24 * 60
+        );
         PurchaseData purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
         Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
         UserData inspector = inspector("inspector@example.com");
@@ -50,17 +53,17 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertTrue(result.valid());
         ValidationData saved = validationRepository.singleSaved();
         assertNotNull(saved);
-        assertEquals(inspector.getEmail(), saved.getInspector().getEmail());
-        assertEquals(purchaseId, saved.getPurchase().getId());
-        assertEquals(command.checkedAt(), saved.getCheckedAt());
-        assertEquals(command.checkedIn(), saved.getCheckedIn());
-        assertTrue(saved.getResult());
+        assertEquals(inspector.email(), saved.inspector().email());
+        assertEquals(purchaseId, saved.purchase().id());
+        assertEquals(command.checkedAt(), saved.checkedAt());
+        assertEquals(command.checkedIn(), saved.checkedIn());
+        assertTrue(saved.result());
     }
 
     @Test
@@ -69,10 +72,13 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime boughtAt = LocalDateTime.of(2024, 5, 10, 8, 0);
         LocalDateTime expiresAt = boughtAt.plusDays(1);
-        TicketData ticket = TicketData.builder()
-                .ticketType(TicketType.PERIOD)
-                .durationMinutes(24 * 60)
-                .build();
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.PERIOD,
+                null,
+                null,
+                24 * 60
+        );
         PurchaseData purchase = purchase(ticket, purchaseId, boughtAt, null, null, expiresAt);
         Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
         UserData inspector = inspector("inspector@example.com");
@@ -89,7 +95,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertFalse(result.valid());
@@ -100,9 +106,13 @@ class TicketValidationServiceTest {
         // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
-        TicketData ticket = TicketData.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .build();
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                null,
+                null,
+                null
+        );
         PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
         Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
         UserData inspector = inspector("inspector@example.com");
@@ -119,7 +129,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertTrue(result.valid());
@@ -130,9 +140,13 @@ class TicketValidationServiceTest {
         // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
-        TicketData ticket = TicketData.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .build();
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                null,
+                null,
+                null
+        );
         PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
         Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
         UserData inspector = inspector("inspector@example.com");
@@ -154,12 +168,12 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var firstResult = service.validatePurchase(firstCommand, inspector.getEmail());
-        var secondResult = service.validatePurchase(secondCommand, inspector.getEmail());
+        var firstResult = service.validatePurchase(firstCommand, inspector.email());
+        var secondResult = service.validatePurchase(secondCommand, inspector.email());
 
         // then
         assertTrue(firstResult.valid());
-        assertEquals(firstCommand.checkedAt(), purchase.getExpiresAt());
+        assertEquals(firstCommand.checkedAt(), purchases.get(purchaseId).expiresAt());
         assertFalse(secondResult.valid());
     }
 
@@ -168,9 +182,13 @@ class TicketValidationServiceTest {
         // given
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
-        TicketData ticket = TicketData.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .build();
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                null,
+                null,
+                null
+        );
         PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", null);
         Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
         UserData inspector = inspector("inspector@example.com");
@@ -187,7 +205,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertFalse(result.valid());
@@ -199,10 +217,13 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         LocalDateTime expiresAt = punchedAt.plusMinutes(30);
-        TicketData ticket = TicketData.builder()
-                .ticketType(TicketType.TIME_BASED)
-                .durationMinutes(30)
-                .build();
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.TIME_BASED,
+                null,
+                null,
+                30
+        );
         PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
         Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
         UserData inspector = inspector("inspector@example.com");
@@ -219,7 +240,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertTrue(result.valid());
@@ -231,10 +252,13 @@ class TicketValidationServiceTest {
         UUID purchaseId = UUID.randomUUID();
         LocalDateTime punchedAt = LocalDateTime.of(2024, 5, 10, 9, 0);
         LocalDateTime expiresAt = punchedAt.plusMinutes(30);
-        TicketData ticket = TicketData.builder()
-                .ticketType(TicketType.TIME_BASED)
-                .durationMinutes(30)
-                .build();
+        TicketData ticket = new TicketData(
+                null,
+                TicketType.TIME_BASED,
+                null,
+                null,
+                30
+        );
         PurchaseData purchase = purchase(ticket, purchaseId, null, punchedAt, "BUS-10", expiresAt);
         Map<UUID, PurchaseData> purchases = purchasesMap(purchase);
         UserData inspector = inspector("inspector@example.com");
@@ -251,7 +275,7 @@ class TicketValidationServiceTest {
         );
 
         // when
-        var result = service.validatePurchase(command, inspector.getEmail());
+        var result = service.validatePurchase(command, inspector.email());
 
         // then
         assertFalse(result.valid());
@@ -273,7 +297,7 @@ class TicketValidationServiceTest {
         // when
         PurchaseNotFoundException ex = assertThrows(PurchaseNotFoundException.class, () -> service.validatePurchase(
                 command,
-                inspector.getEmail()
+                inspector.email()
         ));
 
         // then
@@ -281,11 +305,14 @@ class TicketValidationServiceTest {
     }
 
     private static UserData inspector(String email) {
-        return UserData.builder()
-                .id(UUID.randomUUID())
-                .email(email)
-                .role(UserRole.INSPECTOR)
-                .build();
+        return new UserData(
+                UUID.randomUUID(),
+                UserRole.INSPECTOR,
+                email,
+                null,
+                null,
+                null
+        );
     }
 
 
@@ -297,20 +324,21 @@ class TicketValidationServiceTest {
             String punchedIn,
             LocalDateTime expiresAt
     ) {
-        return PurchaseData.builder()
-                .id(id)
-                .ticket(ticket)
-                .boughtAt(boughtAt)
-                .punchedAt(punchedAt)
-                .punchedIn(punchedIn)
-                .expiresAt(expiresAt)
-                .build();
+        return new PurchaseData(
+                id,
+                null,
+                ticket,
+                boughtAt,
+                punchedAt,
+                punchedIn,
+                expiresAt
+        );
     }
 
     private static Map<UUID, PurchaseData> purchasesMap(PurchaseData... purchases) {
         Map<UUID, PurchaseData> map = new HashMap<>();
         for (PurchaseData purchase : purchases) {
-            map.put(purchase.getId(), purchase);
+            map.put(purchase.id(), purchase);
         }
         return map;
     }
@@ -325,9 +353,9 @@ class TicketValidationServiceTest {
         @Override
         public List<PurchaseData> findAllByPassengerIdOrderByBoughtAtDesc(UUID passengerId) {
             return purchases.values().stream()
-                    .filter(purchase -> purchase.getPassenger() != null)
-                    .filter(purchase -> passengerId.equals(purchase.getPassenger().getId()))
-                    .sorted(Comparator.comparing(PurchaseData::getBoughtAt, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .filter(purchase -> purchase.passenger() != null)
+                    .filter(purchase -> passengerId.equals(purchase.passenger().id()))
+                    .sorted(Comparator.comparing(PurchaseData::boughtAt, Comparator.nullsLast(Comparator.naturalOrder()))
                             .reversed())
                     .toList();
         }
@@ -357,7 +385,7 @@ class TicketValidationServiceTest {
         private static Map<String, UserData> usersMap(UserData... users) {
             Map<String, UserData> map = new HashMap<>();
             for (UserData user : users) {
-                map.put(user.getEmail(), user);
+                map.put(user.email(), user);
             }
             return map;
         }
@@ -396,7 +424,7 @@ class TicketValidationServiceTest {
 
         @Override
         public PurchaseData save(PurchaseData purchase) {
-            purchases.put(purchase.getId(), purchase);
+            purchases.put(purchase.id(), purchase);
             return purchase;
         }
     }

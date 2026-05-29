@@ -56,8 +56,14 @@ class AuthServiceTest {
         ArgumentCaptor<UserData> captor = ArgumentCaptor.forClass(UserData.class);
         when(userCommandRepository.save(captor.capture())).thenAnswer(invocation -> {
             UserData saved = invocation.getArgument(0, UserData.class);
-            saved.setId(UUID.randomUUID());
-            return saved;
+            return new UserData(
+                    UUID.randomUUID(),
+                    saved.role(),
+                    saved.email(),
+                    saved.passwordHash(),
+                    saved.firstName(),
+                    saved.lastName()
+            );
         });
 
         // when
@@ -65,9 +71,9 @@ class AuthServiceTest {
 
         // then
         UserData captured = captor.getValue();
-        assertEquals(command.email(), captured.getEmail());
-        assertEquals(UserRole.PASSENGER, captured.getRole());
-        assertTrue(passwordEncoder.matches(command.password(), captured.getPasswordHash()));
+        assertEquals(command.email(), captured.email());
+        assertEquals(UserRole.PASSENGER, captured.role());
+        assertTrue(passwordEncoder.matches(command.password(), captured.passwordHash()));
     }
 
     @Test
@@ -89,14 +95,14 @@ class AuthServiceTest {
         );
 
         LoginCommand command = new LoginCommand("user@example.com", "secret");
-        UserData user = UserData.builder()
-                .id(UUID.randomUUID())
-                .email(command.email())
-                .passwordHash(passwordEncoder.encode(command.password()))
-                .firstName("Ula")
-                .lastName("User")
-                .role(UserRole.PASSENGER)
-                .build();
+        UserData user = new UserData(
+                UUID.randomUUID(),
+                UserRole.PASSENGER,
+                command.email(),
+                passwordEncoder.encode(command.password()),
+                "Ula",
+                "User"
+        );
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(new UsernamePasswordAuthenticationToken(command.email(), command.password()));

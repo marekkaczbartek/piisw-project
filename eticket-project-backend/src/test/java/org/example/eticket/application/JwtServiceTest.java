@@ -21,21 +21,21 @@ class JwtServiceTest {
                 60);
 
         JwtService jwtService = new JwtService(properties);
-        UserData user = UserData.builder()
-                .id(UUID.randomUUID())
-                .email("user@example.com")
-                .passwordHash("hash")
-                .firstName("Ula")
-                .lastName("User")
-                .role(UserRole.PASSENGER)
-                .build();
+        UserData user = new UserData(
+                UUID.randomUUID(),
+                UserRole.PASSENGER,
+                "user@example.com",
+                "hash",
+                "Ula",
+                "User"
+        );
 
         // when
         String token = jwtService.generateToken(user);
 
         // then
-        assertEquals(user.getEmail(), jwtService.extractEmail(token));
-        assertTrue(jwtService.isTokenValid(token, user.getEmail()));
+        assertEquals(user.email(), jwtService.extractEmail(token));
+        assertTrue(jwtService.isTokenValid(token, user.email()));
     }
 
     @Test
@@ -52,19 +52,19 @@ class JwtServiceTest {
 
         JwtService validatorService = new JwtService(expectedIssuerProperties);
         JwtService tokenIssuerService = new JwtService(unexpectedIssuerProperties);
-        UserData user = UserData.builder()
-                .id(UUID.randomUUID())
-                .email("user@example.com")
-                .passwordHash("hash")
-                .firstName("Ula")
-                .lastName("User")
-                .role(UserRole.PASSENGER)
-                .build();
+        UserData user = new UserData(
+                UUID.randomUUID(),
+                UserRole.PASSENGER,
+                "user@example.com",
+                "hash",
+                "Ula",
+                "User"
+        );
 
         // when
         String token = tokenIssuerService.generateToken(user);
 
         // then
-        assertFalse(validatorService.isTokenValid(token, user.getEmail()));
+        assertFalse(validatorService.isTokenValid(token, user.email()));
     }
 }

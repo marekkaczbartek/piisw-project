@@ -37,18 +37,27 @@ public class ValidationService {
                 command.checkedIn()
         );
 
-        if (result && purchase.getTicket() != null && purchase.getTicket().getTicketType() == TicketType.SINGLE_USE) {
-            purchase.setExpiresAt(command.checkedAt());
+        if (result && purchase.ticket() != null && purchase.ticket().ticketType() == TicketType.SINGLE_USE) {
+            purchase = new PurchaseData(
+                    purchase.id(),
+                    purchase.passenger(),
+                    purchase.ticket(),
+                    purchase.boughtAt(),
+                    purchase.punchedAt(),
+                    purchase.punchedIn(),
+                    command.checkedAt()
+            );
             purchaseCommandRepository.save(purchase);
         }
 
-        ValidationData validation = ValidationData.builder()
-                .inspector(inspector)
-                .purchase(purchase)
-                .checkedAt(command.checkedAt())
-                .checkedIn(command.checkedIn())
-                .result(result)
-                .build();
+        ValidationData validation = new ValidationData(
+                null,
+                inspector,
+                purchase,
+                command.checkedAt(),
+                command.checkedIn(),
+                result
+        );
         validationCommandRepository.save(validation);
 
         return new ValidationResultView(result);

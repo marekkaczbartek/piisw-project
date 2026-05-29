@@ -47,12 +47,15 @@ public class PurchaseService {
 
         LocalDateTime expiresAt = resolveExpiry(ticket, command.boughtAt());
 
-        PurchaseData purchase = PurchaseData.builder()
-                .passenger(passenger)
-                .ticket(ticket)
-                .boughtAt(command.boughtAt())
-                .expiresAt(expiresAt)
-                .build();
+        PurchaseData purchase = new PurchaseData(
+                null,
+                passenger,
+                ticket,
+                command.boughtAt(),
+                null,
+                null,
+                expiresAt
+        );
 
         PurchaseData saved = purchaseCommandRepository.save(purchase);
         return purchaseMapper.toPurchaseView(saved);
@@ -61,21 +64,27 @@ public class PurchaseService {
     public PunchTicketView punchTicket(PunchTicketCommand command) {
         PurchaseData purchase = purchaseQueryRepository.findById(command.purchaseId())
                 .orElseThrow(PurchaseNotFoundException::new);
-        if (purchase.getPunchedAt() != null) {
+        if (purchase.punchedAt() != null) {
             throw new TicketAlreadyPunchedException();
         }
 
-        TicketData ticket = purchase.getTicket();
-        if (ticket == null || ticket.getTicketType() == null) {
+        TicketData ticket = purchase.ticket();
+        if (ticket == null || ticket.ticketType() == null) {
             throw new FieldRequiredException("ticketType");
         }
 
         LocalDateTime expiresAt = resolvePunchExpiry(ticket, command.punchedAt());
-        purchase.setPunchedAt(command.punchedAt());
-        purchase.setPunchedIn(command.punchedIn());
-        purchase.setExpiresAt(expiresAt);
+        PurchaseData updated = new PurchaseData(
+                purchase.id(),
+                purchase.passenger(),
+                purchase.ticket(),
+                purchase.boughtAt(),
+                command.punchedAt(),
+                command.punchedIn(),
+                expiresAt
+        );
 
-        PurchaseData saved = purchaseCommandRepository.save(purchase);
+        PurchaseData saved = purchaseCommandRepository.save(updated);
         return purchaseMapper.toPunchTicketView(saved);
     }
 
@@ -83,7 +92,7 @@ public class PurchaseService {
         UserData passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
 
         List<PurchaseData> validPurchases = purchaseQueryRepository
-                .findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId()).stream()
+                .findAllByPassengerIdOrderByBoughtAtDesc(passenger.id()).stream()
                 .filter(purchase -> isValidAt(purchase, query.checkedAt()))
                 .toList();
 
@@ -92,15 +101,15 @@ public class PurchaseService {
 
     public Page<PurchaseHistoryView> getPurchaseHistory(GetPurchaseHistoryQuery query, String passengerEmail) {
         UserData passenger = userResolver.resolveByEmail(passengerEmail, "Passenger not found");
-        return purchaseQueryRepository.findAllByPassengerIdOrderByBoughtAtDesc(passenger.getId(), query.pageable())
+        return purchaseQueryRepository.findAllByPassengerIdOrderByBoughtAtDesc(passenger.id(), query.pageable())
                 .map(purchaseMapper::toPurchaseHistoryView);
     }
 
     private static LocalDateTime resolveExpiry(TicketData ticket, LocalDateTime boughtAt) {
-        if (ticket.getTicketType() != TicketType.PERIOD) {
+        if (ticket.ticketType() != TicketType.PERIOD) {
             return null;
         }
-        Integer durationMinutes = ticket.getDurationMinutes();
+        Integer durationMinutes = ticket.durationMinutes();
         if (durationMinutes == null) {
             throw new FieldRequiredException("durationMinutes");
         }
@@ -108,13 +117,13 @@ public class PurchaseService {
     }
 
     private static LocalDateTime resolvePunchExpiry(TicketData ticket, LocalDateTime punchedAt) {
-        if (ticket.getTicketType() == TicketType.PERIOD) {
+        if (ticket.ticketType() == TicketType.PERIOD) {
             throw new PeriodTicketPunchNotAllowedException();
         }
-        if (ticket.getTicketType() == TicketType.SINGLE_USE) {
+        if (ticket.ticketType() == TicketType.SINGLE_USE) {
             return null;
         }
-        Integer durationMinutes = ticket.getDurationMinutes();
+        Integer durationMinutes = ticket.durationMinutes();
         if (durationMinutes == null) {
             throw new FieldRequiredException("durationMinutes");
         }

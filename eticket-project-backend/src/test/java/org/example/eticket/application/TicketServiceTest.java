@@ -36,18 +36,20 @@ class TicketServiceTest {
     @Test
     void returnsAllTicketsWithDurationIfProvided() {
         // given
-        TicketData singleUse = TicketData.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .discountType(DiscountType.NORMAL)
-                .price(new BigDecimal("3.50"))
-                .durationMinutes(null)
-                .build();
-        TicketData timeBased = TicketData.builder()
-                .ticketType(TicketType.TIME_BASED)
-                .discountType(DiscountType.REDUCED)
-                .price(new BigDecimal("2.00"))
-                .durationMinutes(30)
-                .build();
+        TicketData singleUse = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                DiscountType.NORMAL,
+                new BigDecimal("3.50"),
+                null
+        );
+        TicketData timeBased = new TicketData(
+                null,
+                TicketType.TIME_BASED,
+                DiscountType.REDUCED,
+                new BigDecimal("2.00"),
+                30
+        );
         TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(singleUse, timeBased));
         TicketMapper ticketMapper = Mappers.getMapper(TicketMapper.class);
         TicketService ticketService = new TicketService(ticketReadRepository, ticketMapper);
@@ -66,17 +68,20 @@ class TicketServiceTest {
     @Test
     void returnsAllTicketsWhenRequested() {
         // given
-        TicketData first = TicketData.builder()
-                .ticketType(TicketType.SINGLE_USE)
-                .discountType(DiscountType.NORMAL)
-                .price(new BigDecimal("3.50"))
-                .build();
-        TicketData second = TicketData.builder()
-                .ticketType(TicketType.TIME_BASED)
-                .discountType(DiscountType.REDUCED)
-                .price(new BigDecimal("2.00"))
-                .durationMinutes(30)
-                .build();
+        TicketData first = new TicketData(
+                null,
+                TicketType.SINGLE_USE,
+                DiscountType.NORMAL,
+                new BigDecimal("3.50"),
+                null
+        );
+        TicketData second = new TicketData(
+                null,
+                TicketType.TIME_BASED,
+                DiscountType.REDUCED,
+                new BigDecimal("2.00"),
+                30
+        );
         TicketQueryRepository ticketReadRepository = new InMemoryTicketReadRepository(List.of(first, second));
         TicketMapper ticketMapper = Mappers.getMapper(TicketMapper.class);
         TicketService ticketService = new TicketService(ticketReadRepository, ticketMapper);
@@ -110,11 +115,11 @@ class TicketServiceTest {
                 Integer durationMinutes
         ) {
             return tickets.stream()
-                    .filter(ticket -> ticketType == ticket.getTicketType())
-                    .filter(ticket -> discountType == ticket.getDiscountType())
+                    .filter(ticket -> ticketType == ticket.ticketType())
+                    .filter(ticket -> discountType == ticket.discountType())
                     .filter(ticket -> durationMinutes == null
-                            ? ticket.getDurationMinutes() == null
-                            : durationMinutes.equals(ticket.getDurationMinutes()))
+                            ? ticket.durationMinutes() == null
+                            : durationMinutes.equals(ticket.durationMinutes()))
                     .findFirst();
         }
     }

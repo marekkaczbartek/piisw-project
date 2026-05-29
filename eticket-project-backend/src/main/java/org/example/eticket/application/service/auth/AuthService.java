@@ -33,13 +33,14 @@ public class AuthService {
             throw new EmailAlreadyRegisteredException();
         }
 
-        UserData user = userCommandRepository.save(UserData.builder()
-                .email(command.email())
-                .passwordHash(passwordEncoder.encode(command.password()))
-                .firstName(command.firstName())
-                .lastName(command.lastName())
-                .role(UserRole.PASSENGER)
-                .build());
+        UserData user = userCommandRepository.save(new UserData(
+                null,
+                UserRole.PASSENGER,
+                command.email(),
+                passwordEncoder.encode(command.password()),
+                command.firstName(),
+                command.lastName()
+        ));
 
         return authMapper.toView(user, jwtService.generateToken(user));
     }

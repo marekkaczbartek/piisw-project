@@ -16,12 +16,12 @@ public class PurchaseValidator {
     }
 
     private static boolean isValid(PurchaseData purchase, LocalDateTime checkedAt, String checkedIn) {
-        TicketData ticket = purchase.getTicket();
-        if (ticket == null || ticket.getTicketType() == null) {
+        TicketData ticket = purchase.ticket();
+        if (ticket == null || ticket.ticketType() == null) {
             return false;
         }
 
-        return switch (ticket.getTicketType()) {
+        return switch (ticket.ticketType()) {
             case PERIOD -> isPeriodValid(purchase, checkedAt);
             case SINGLE_USE -> isSingleUseValid(purchase, checkedIn);
             case TIME_BASED -> isTimeBasedValid(purchase, checkedAt);
@@ -29,8 +29,8 @@ public class PurchaseValidator {
     }
 
     private static boolean isPeriodValid(PurchaseData purchase, LocalDateTime checkedAt) {
-        LocalDateTime boughtAt = purchase.getBoughtAt();
-        LocalDateTime expiresAt = purchase.getExpiresAt();
+        LocalDateTime boughtAt = purchase.boughtAt();
+        LocalDateTime expiresAt = purchase.expiresAt();
         if (boughtAt == null || expiresAt == null) {
             return false;
         }
@@ -38,18 +38,18 @@ public class PurchaseValidator {
     }
 
     private static boolean isSingleUseValid(PurchaseData purchase, String checkedIn) {
-        if (purchase.getExpiresAt() != null) {
+        if (purchase.expiresAt() != null) {
             return false;
         }
-        if (purchase.getPunchedAt() == null || purchase.getPunchedIn() == null) {
+        if (purchase.punchedAt() == null || purchase.punchedIn() == null) {
             return false;
         }
-        return purchase.getPunchedIn().equals(checkedIn);
+        return purchase.punchedIn().equals(checkedIn);
     }
 
     private static boolean isTimeBasedValid(PurchaseData purchase, LocalDateTime checkedAt) {
-        LocalDateTime punchedAt = purchase.getPunchedAt();
-        LocalDateTime expiresAt = purchase.getExpiresAt();
+        LocalDateTime punchedAt = purchase.punchedAt();
+        LocalDateTime expiresAt = purchase.expiresAt();
         if (punchedAt == null || expiresAt == null) {
             return false;
         }

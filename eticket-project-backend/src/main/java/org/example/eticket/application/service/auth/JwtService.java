@@ -28,11 +28,11 @@ public class JwtService {
         Instant expiresAt = now.plusSeconds(properties.expirationMinutes() * 60);
 
         return Jwts.builder()
-                .subject(user.getEmail())
+                .subject(user.email())
                 .issuer(properties.issuer())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiresAt))
-                .claim("role", user.getRole().name())
+                .claim("role", user.role().name())
                 .signWith(signingKey)
                 .compact();
     }
