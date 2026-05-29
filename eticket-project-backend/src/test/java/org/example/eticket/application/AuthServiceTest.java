@@ -1,5 +1,6 @@
 package org.example.eticket.application;
 
+import org.example.eticket.application.exception.EmailAlreadyRegisteredException;
 import org.example.eticket.application.mapper.auth.AuthMapper;
 import org.example.eticket.application.model.auth.LoginCommand;
 import org.example.eticket.application.model.auth.RegisterCommand;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -89,5 +91,27 @@ class AuthServiceTest {
 
         // then
         assertEquals(command.email(), result.email());
+    }
+
+    @Test
+    void registerThrowsWhenEmailAlreadyRegistered() {
+        // given
+        UserJpaRepository userRepository = mock(UserJpaRepository.class);
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        AuthenticationManager authenticationManager = mock(AuthenticationManager.class);
+        JwtService jwtService = mock(JwtService.class);
+        AuthMapper authMapper = Mappers.getMapper(AuthMapper.class);
+        AuthService authService = new AuthService(userRepository, passwordEncoder, authenticationManager, jwtService, authMapper);
+
+        RegisterCommand command = new RegisterCommand("new@example.com", "secret", "New", "User");
+
+        when(userRepository.existsByEmail(command.email())).thenReturn(true);
+
+        // when
+        EmailAlreadyRegisteredException ex = assertThrows(EmailAlreadyRegisteredException.class,
+                () -> authService.register(command));
+
+        // then
+        assertEquals("Email already registered", ex.getMessage());
     }
 }

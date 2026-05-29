@@ -1,7 +1,7 @@
 package org.example.eticket.application.service.auth;
 
 import lombok.RequiredArgsConstructor;
-import org.example.eticket.application.exception.ConflictException;
+import org.example.eticket.application.exception.EmailAlreadyRegisteredException;
 import org.example.eticket.application.exception.UnauthorizedException;
 import org.example.eticket.application.mapper.auth.AuthMapper;
 import org.example.eticket.application.model.auth.AuthView;
@@ -28,7 +28,7 @@ public class AuthService {
 
     public AuthView register(RegisterCommand command) {
         if (userRepository.existsByEmail(command.email())) {
-            throw new ConflictException("Email already registered");
+            throw new EmailAlreadyRegisteredException();
         }
 
         User user = userRepository.save(User.builder()

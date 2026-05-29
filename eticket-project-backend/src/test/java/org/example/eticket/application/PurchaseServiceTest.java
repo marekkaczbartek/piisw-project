@@ -1,8 +1,9 @@
 package org.example.eticket.application;
 
-import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
+import org.example.eticket.application.exception.PurchaseNotFoundException;
 import org.example.eticket.application.exception.TicketAlreadyPunchedException;
+import org.example.eticket.application.exception.TicketNotFoundException;
 import org.example.eticket.application.mapper.purchase.PurchaseMapper;
 import org.example.eticket.application.model.purchase.MakePurchaseCommand;
 import org.example.eticket.application.model.purchase.PunchTicketCommand;
@@ -122,7 +123,7 @@ class PurchaseServiceTest {
         );
 
         // when
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.makePurchase(
+        TicketNotFoundException ex = assertThrows(TicketNotFoundException.class, () -> service.makePurchase(
                 new MakePurchaseCommand(TicketType.SINGLE_USE, DiscountType.NORMAL, null, LocalDateTime.now()),
                 passenger.getEmail()
         ));
@@ -214,7 +215,7 @@ class PurchaseServiceTest {
         );
 
         // when
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.punchTicket(
+        PurchaseNotFoundException ex = assertThrows(PurchaseNotFoundException.class, () -> service.punchTicket(
                 new PunchTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10")
         ));
 
