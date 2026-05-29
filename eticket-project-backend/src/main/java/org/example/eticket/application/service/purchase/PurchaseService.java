@@ -2,9 +2,10 @@ package org.example.eticket.application.service.purchase;
 
 import lombok.RequiredArgsConstructor;
 import org.example.eticket.application.exception.FieldRequiredException;
-import org.example.eticket.application.exception.NotFoundException;
 import org.example.eticket.application.exception.PeriodTicketPunchNotAllowedException;
+import org.example.eticket.application.exception.PurchaseNotFoundException;
 import org.example.eticket.application.exception.TicketAlreadyPunchedException;
+import org.example.eticket.application.exception.TicketNotFoundException;
 import org.example.eticket.application.mapper.purchase.PurchaseMapper;
 import org.example.eticket.application.model.purchase.*;
 import org.example.eticket.application.service.auth.UserResolver;
@@ -42,7 +43,7 @@ public class PurchaseService {
                 command.ticketType(),
                 command.discountType(),
                 command.durationMinutes()
-        ).orElseThrow(() -> new NotFoundException("Ticket not found"));
+        ).orElseThrow(TicketNotFoundException::new);
 
         LocalDateTime expiresAt = resolveExpiry(ticket, command.boughtAt());
 
@@ -59,7 +60,7 @@ public class PurchaseService {
 
     public PunchTicketView punchTicket(PunchTicketCommand command) {
         Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
-                .orElseThrow(() -> new NotFoundException("Purchase not found"));
+                .orElseThrow(PurchaseNotFoundException::new);
         if (purchase.getPunchedAt() != null) {
             throw new TicketAlreadyPunchedException();
         }
@@ -70,6 +71,7 @@ public class PurchaseService {
         }
 
         LocalDateTime expiresAt = resolvePunchExpiry(ticket, command.punchedAt());
+        // nie dzialac tu na encjach
         purchase.setPunchedAt(command.punchedAt());
         purchase.setPunchedIn(command.punchedIn());
         purchase.setExpiresAt(expiresAt);

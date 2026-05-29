@@ -1,6 +1,6 @@
 package org.example.eticket.application;
 
-import org.example.eticket.application.exception.NotFoundException;
+import org.example.eticket.application.exception.PurchaseNotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
 import org.example.eticket.application.service.auth.UserResolver;
 import org.example.eticket.application.service.validation.ValidationService;
@@ -271,7 +271,7 @@ class TicketValidationServiceTest {
         ValidateTicketCommand command = new ValidateTicketCommand(UUID.randomUUID(), LocalDateTime.now(), "BUS-10");
 
         // when
-        NotFoundException ex = assertThrows(NotFoundException.class, () -> service.validatePurchase(
+        PurchaseNotFoundException ex = assertThrows(PurchaseNotFoundException.class, () -> service.validatePurchase(
                 command,
                 inspector.getEmail()
         ));
@@ -316,10 +316,6 @@ class TicketValidationServiceTest {
     }
 
     private record InMemoryPurchaseQueryRepository(Map<UUID, Purchase> purchases) implements PurchaseQueryRepository {
-
-        private InMemoryPurchaseQueryRepository(Purchase... purchases) {
-            this(purchasesMap(purchases));
-        }
 
         @Override
         public Optional<Purchase> findById(UUID id) {
@@ -390,13 +386,8 @@ class TicketValidationServiceTest {
         }
     }
 
-    private static class InMemoryPurchaseCommandRepository implements PurchaseCommandRepository {
-
-        private final Map<UUID, Purchase> purchases;
-
-        private InMemoryPurchaseCommandRepository(Map<UUID, Purchase> purchases) {
-            this.purchases = purchases;
-        }
+    private record InMemoryPurchaseCommandRepository(
+            Map<UUID, Purchase> purchases) implements PurchaseCommandRepository {
 
         @Override
         public Purchase save(Purchase purchase) {

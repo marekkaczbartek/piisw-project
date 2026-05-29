@@ -1,7 +1,7 @@
 package org.example.eticket.application.service.validation;
 
 import lombok.RequiredArgsConstructor;
-import org.example.eticket.application.exception.NotFoundException;
+import org.example.eticket.application.exception.PurchaseNotFoundException;
 import org.example.eticket.application.model.validation.ValidateTicketCommand;
 import org.example.eticket.application.model.validation.ValidationResultView;
 import org.example.eticket.application.service.auth.UserResolver;
@@ -29,7 +29,7 @@ public class ValidationService {
 
     public ValidationResultView validatePurchase(ValidateTicketCommand command, String inspectorEmail) {
         Purchase purchase = purchaseQueryRepository.findById(command.purchaseId())
-                .orElseThrow(() -> new NotFoundException("Purchase not found"));
+                .orElseThrow(PurchaseNotFoundException::new);
         User inspector = userResolver.resolveByEmail(inspectorEmail, "Inspector not found");
         boolean result = isValidForInspection(
                 purchase,
